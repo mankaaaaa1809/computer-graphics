@@ -1,0 +1,795 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Цветовые модели</title>
+    <style>
+        :root {
+            --primary-color: #4a6fa5;
+            --secondary-color: #166088;
+            --background-color: #f5f7fa;
+            --card-color: #ffffff;
+            --text-color: #333333;
+            --border-color: #dddddd;
+            --warning-color: #ff9800;
+            --error-color: #f44336;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: var(--text-color);
+            background-color: var(--background-color);
+            margin: 0;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+        
+        @media (max-width: 768px) {
+            .container {
+                grid-template-columns: 1fr;
+            }
+        }
+        
+        header {
+            grid-column: 1 / -1;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        h1 {
+            color: var(--secondary-color);
+            margin-bottom: 10px;
+        }
+        
+        .color-preview {
+            grid-column: 1 / -1;
+            height: 100px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            border: 2px solid var(--border-color);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 18px;
+            transition: background-color 0.3s;
+        }
+        
+        .color-model {
+            background-color: var(--card-color);
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+        
+        h2 {
+            color: var(--primary-color);
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 10px;
+            margin-top: 0;
+        }
+        
+        .color-input {
+            margin-bottom: 15px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 500;
+        }
+        
+        input[type="range"] {
+            width: 100%;
+            margin-bottom: 5px;
+        }
+        
+        .input-group {
+            display: flex;
+            gap: 10px;
+        }
+        
+        .input-group input {
+            flex: 1;
+            padding: 8px;
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+        }
+        
+        .warning {
+            color: var(--warning-color);
+            font-size: 14px;
+            margin-top: 5px;
+            display: none;
+        }
+        
+        .error {
+            color: var(--error-color);
+            font-size: 14px;
+            margin-top: 5px;
+            display: none;
+            background-color: rgba(244, 67, 54, 0.1);
+            padding: 8px;
+            border-radius: 4px;
+            border-left: 3px solid var(--error-color);
+        }
+        
+        .color-picker-container {
+            grid-column: 1 / -1;
+            background-color: var(--card-color);
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        
+        .color-picker-label {
+            font-size: 18px;
+            font-weight: 600;
+            color: var(--primary-color);
+        }
+        
+        #colorPicker {
+            width: 60px;
+            height: 60px;
+            border: none;
+            cursor: pointer;
+            border-radius: 8px;
+            border: 2px solid var(--border-color);
+        }
+        
+        footer {
+            grid-column: 1 / -1;
+            text-align: center;
+            margin-top: 30px;
+            font-size: 14px;
+            color: #777;
+        }
+
+        .range-warning {
+            display: none;
+            background-color: rgba(255, 152, 0, 0.1);
+            padding: 8px;
+            border-radius: 4px;
+            border-left: 3px solid var(--warning-color);
+            margin-top: 10px;
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Цветовые модели</h1>
+        </header>
+        
+        <div class="color-preview" id="colorPreview">
+            Выбранный цвет
+        </div>
+        
+        <div class="color-model">
+            <h2>RGB</h2>
+            <div class="color-input">
+                <label for="rSlider">Красный (R): <span id="rValue">0</span></label>
+                <input type="range" id="rSlider" min="0" max="255" value="128">
+                <div class="input-group">
+                    <input type="number" id="rInput" min="0" max="255" value="128">
+                </div>
+            </div>
+            <div class="color-input">
+                <label for="gSlider">Зеленый (G): <span id="gValue">0</span></label>
+                <input type="range" id="gSlider" min="0" max="255" value="128">
+                <div class="input-group">
+                    <input type="number" id="gInput" min="0" max="255" value="128">
+                </div>
+            </div>
+            <div class="color-input">
+                <label for="bSlider">Синий (B): <span id="bValue">0</span></label>
+                <input type="range" id="bSlider" min="0" max="255" value="128">
+                <div class="input-group">
+                    <input type="number" id="bInput" min="0" max="255" value="128">
+                </div>
+            </div>
+            <div class="range-warning" id="rgbRangeWarning">Значение было скорректировано для соответствия диапазону 0-255</div>
+            <div class="error" id="rgbError"></div>
+        </div>
+        
+        <div class="color-model">
+            <h2>CMYK</h2>
+            <div class="color-input">
+                <label for="cSlider">Голубой (C): <span id="cValue">0</span>%</label>
+                <input type="range" id="cSlider" min="0" max="100" value="0">
+                <div class="input-group">
+                    <input type="number" id="cInput" min="0" max="100" value="0">
+                </div>
+            </div>
+            <div class="color-input">
+                <label for="mSlider">Пурпурный (M): <span id="mValue">0</span>%</label>
+                <input type="range" id="mSlider" min="0" max="100" value="0">
+                <div class="input-group">
+                    <input type="number" id="mInput" min="0" max="100" value="0">
+                </div>
+            </div>
+            <div class="color-input">
+                <label for="ySlider">Желтый (Y): <span id="yValue">0</span>%</label>
+                <input type="range" id="ySlider" min="0" max="100" value="0">
+                <div class="input-group">
+                    <input type="number" id="yInput" min="0" max="100" value="0">
+                </div>
+            </div>
+            <div class="color-input">
+                <label for="kSlider">Черный (K): <span id="kValue">0</span>%</label>
+                <input type="range" id="kSlider" min="0" max="100" value="0">
+                <div class="input-group">
+                    <input type="number" id="kInput" min="0" max="100" value="0">
+                </div>
+            </div>
+            <div class="range-warning" id="cmykRangeWarning">Значение было скорректировано для соответствия диапазону 0-100%</div>
+            <div class="error" id="cmykError"></div>
+        </div>
+        
+        <div class="color-model">
+            <h2>HSV</h2>
+            <div class="color-input">
+                <label for="hSlider">Оттенок (H): <span id="hValue">0</span>°</label>
+                <input type="range" id="hSlider" min="0" max="360" value="0">
+                <div class="input-group">
+                    <input type="number" id="hInput" min="0" max="360" value="0">
+                </div>
+            </div>
+            <div class="color-input">
+                <label for="sSlider">Насыщенность (S): <span id="sValue">0</span>%</label>
+                <input type="range" id="sSlider" min="0" max="100" value="0">
+                <div class="input-group">
+                    <input type="number" id="sInput" min="0" max="100" value="0">
+                </div>
+            </div>
+            <div class="color-input">
+                <label for="vSlider">Яркость (V): <span id="vValue">0</span>%</label>
+                <input type="range" id="vSlider" min="0" max="100" value="0">
+                <div class="input-group">
+                    <input type="number" id="vInput" min="0" max="100" value="0">
+                </div>
+            </div>
+            <div class="range-warning" id="hsvRangeWarning">Значение было скорректировано для соответствия допустимому диапазону</div>
+            <div class="error" id="hsvError"></div>
+        </div>
+        
+        <div class="color-picker-container">
+            <div class="color-picker-label">Выбор цвета из палитры</div>
+            <input type="color" id="colorPicker" value="#808080">
+        </div>
+        
+        <footer>
+            <p>Лабораторная работа по цветовым моделям. Вариант 15: RGB ↔ CMYK ↔ HSV</p>
+        </footer>
+    </div>
+
+    <script>
+        const colorPreview = document.getElementById('colorPreview');
+        
+        const rSlider = document.getElementById('rSlider');
+        const gSlider = document.getElementById('gSlider');
+        const bSlider = document.getElementById('bSlider');
+        const rInput = document.getElementById('rInput');
+        const gInput = document.getElementById('gInput');
+        const bInput = document.getElementById('bInput');
+        const rValue = document.getElementById('rValue');
+        const gValue = document.getElementById('gValue');
+        const bValue = document.getElementById('bValue');
+        const rgbRangeWarning = document.getElementById('rgbRangeWarning');
+        const rgbError = document.getElementById('rgbError');
+        
+        const cSlider = document.getElementById('cSlider');
+        const mSlider = document.getElementById('mSlider');
+        const ySlider = document.getElementById('ySlider');
+        const kSlider = document.getElementById('kSlider');
+        const cInput = document.getElementById('cInput');
+        const mInput = document.getElementById('mInput');
+        const yInput = document.getElementById('yInput');
+        const kInput = document.getElementById('kInput');
+        const cValue = document.getElementById('cValue');
+        const mValue = document.getElementById('mValue');
+        const yValue = document.getElementById('yValue');
+        const kValue = document.getElementById('kValue');
+        const cmykRangeWarning = document.getElementById('cmykRangeWarning');
+        const cmykError = document.getElementById('cmykError');
+        
+        const hSlider = document.getElementById('hSlider');
+        const sSlider = document.getElementById('sSlider');
+        const vSlider = document.getElementById('vSlider');
+        const hInput = document.getElementById('hInput');
+        const sInput = document.getElementById('sInput');
+        const vInput = document.getElementById('vInput');
+        const hValue = document.getElementById('hValue');
+        const sValue = document.getElementById('sValue');
+        const vValue = document.getElementById('vValue');
+        const hsvRangeWarning = document.getElementById('hsvRangeWarning');
+        const hsvError = document.getElementById('hsvError');
+        
+        const colorPicker = document.getElementById('colorPicker');
+        
+        let currentColor = { r: 128, g: 128, b: 128 };
+        let rangeWarningTimeout = null;
+        
+        let updating = false;
+        
+        function init() {
+            updateColorPreview();
+            updateRGBValues();
+            updateCMYKFromRGB();
+            updateHSVFromRGB();
+            
+            [rSlider, gSlider, bSlider].forEach(slider => {
+                slider.addEventListener('input', function() {
+                    if (updating) return;
+                    updating = true;
+                    
+                    const correspondingInput = document.getElementById(this.id.replace('Slider', 'Input'));
+                    correspondingInput.value = this.value;
+                    
+                    updateRGBFromSliders();
+                    updateCMYKFromRGB();
+                    updateHSVFromRGB();
+                    updateColorPreview();
+                    
+                    updating = false;
+                });
+            });
+            
+            [rInput, gInput, bInput].forEach(input => {
+                input.addEventListener('input', function() {
+                    if (updating) return;
+                    updating = true;
+                    
+                    let value = parseInt(this.value) || 0;
+                    let corrected = false;
+                    
+                    if (value < 0) {
+                        value = 0;
+                        corrected = true;
+                    }
+                    if (value > 255) {
+                        value = 255;
+                        corrected = true;
+                    }
+                    
+                    this.value = value;
+                    
+                    const correspondingSlider = document.getElementById(this.id.replace('Input', 'Slider'));
+                    correspondingSlider.value = value;
+                    
+                    if (corrected) {
+                        showRangeWarning('rgbRangeWarning');
+                    }
+                    
+                    updateRGBFromInputs();
+                    updateCMYKFromRGB();
+                    updateHSVFromRGB();
+                    updateColorPreview();
+                    
+                    updating = false;
+                });
+            });
+            
+            [cSlider, mSlider, ySlider, kSlider].forEach(slider => {
+                slider.addEventListener('input', function() {
+                    if (updating) return;
+                    updating = true;
+                    
+                    const correspondingInput = document.getElementById(this.id.replace('Slider', 'Input'));
+                    correspondingInput.value = this.value;
+                    
+                    updateCMYKFromSliders();
+                    updateRGBFromCMYK();
+                    updateHSVFromRGB();
+                    updateColorPreview();
+                    
+                    updating = false;
+                });
+            });
+            
+            [cInput, mInput, yInput, kInput].forEach(input => {
+                input.addEventListener('input', function() {
+                    if (updating) return;
+                    updating = true;
+                    
+                    let value = parseInt(this.value) || 0;
+                    let corrected = false;
+                    
+                    if (value < 0) {
+                        value = 0;
+                        corrected = true;
+                    }
+                    if (value > 100) {
+                        value = 100;
+                        corrected = true;
+                    }
+                    
+                    this.value = value;
+                    
+                    const correspondingSlider = document.getElementById(this.id.replace('Input', 'Slider'));
+                    correspondingSlider.value = value;
+                    
+                    if (corrected) {
+                        showRangeWarning('cmykRangeWarning');
+                    }
+                    
+                    updateCMYKFromInputs();
+                    updateRGBFromCMYK();
+                    updateHSVFromRGB();
+                    updateColorPreview();
+                    
+                    updating = false;
+                });
+            });
+            
+            [hSlider, sSlider, vSlider].forEach(slider => {
+                slider.addEventListener('input', function() {
+                    if (updating) return;
+                    updating = true;
+                    
+                    const correspondingInput = document.getElementById(this.id.replace('Slider', 'Input'));
+                    correspondingInput.value = this.value;
+                    
+                    updateHSVFromSliders();
+                    updateRGBFromHSV();
+                    updateCMYKFromRGB();
+                    updateColorPreview();
+                    
+                    updating = false;
+                });
+            });
+            
+            [hInput, sInput, vInput].forEach(input => {
+                input.addEventListener('input', function() {
+                    if (updating) return;
+                    updating = true;
+                    
+                    let value = parseInt(this.value) || 0;
+                    let corrected = false;
+                    const max = this.id === 'hInput' ? 360 : 100;
+                    
+                    if (value < 0) {
+                        value = 0;
+                        corrected = true;
+                    }
+                    if (value > max) {
+                        value = max;
+                        corrected = true;
+                    }
+                    
+                    this.value = value;
+                    
+                    const correspondingSlider = document.getElementById(this.id.replace('Input', 'Slider'));
+                    correspondingSlider.value = value;
+                    
+                    if (corrected) {
+                        showRangeWarning('hsvRangeWarning');
+                    }
+                    
+                    updateHSVFromInputs();
+                    updateRGBFromHSV();
+                    updateCMYKFromRGB();
+                    updateColorPreview();
+                    
+                    updating = false;
+                });
+            });
+            
+            colorPicker.addEventListener('input', function() {
+                if (updating) return;
+                updating = true;
+                
+                const hex = this.value;
+                const r = parseInt(hex.substr(1, 2), 16);
+                const g = parseInt(hex.substr(3, 2), 16);
+                const b = parseInt(hex.substr(5, 2), 16);
+                
+                currentColor = { r, g, b };
+                
+                updateRGBValues();
+                updateCMYKFromRGB();
+                updateHSVFromRGB();
+                updateColorPreview();
+                
+                updating = false;
+            });
+        }
+        
+        function showRangeWarning(warningId) {
+            const warningElement = document.getElementById(warningId);
+            warningElement.style.display = 'block';
+            
+            if (rangeWarningTimeout) {
+                clearTimeout(rangeWarningTimeout);
+            }
+            
+            rangeWarningTimeout = setTimeout(() => {
+                warningElement.style.display = 'none';
+            }, 3000);
+        }
+        
+        function updateColorPreview() {
+            const { r, g, b } = currentColor;
+            const hex = rgbToHex(r, g, b);
+            colorPreview.style.backgroundColor = hex;
+            
+            const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
+            colorPreview.style.color = luminance > 0.5 ? '#000000' : '#FFFFFF';
+            
+            colorPreview.textContent = `RGB: ${r}, ${g}, ${b} | HEX: ${hex}`;
+            
+            colorPicker.value = hex;
+        }
+        
+        function updateRGBFromSliders() {
+            currentColor.r = parseInt(rSlider.value);
+            currentColor.g = parseInt(gSlider.value);
+            currentColor.b = parseInt(bSlider.value);
+            updateRGBValues();
+        }
+        
+        function updateRGBFromInputs() {
+            currentColor.r = parseInt(rInput.value);
+            currentColor.g = parseInt(gInput.value);
+            currentColor.b = parseInt(bInput.value);
+            updateRGBValues();
+        }
+        
+        function updateRGBValues() {
+            rSlider.value = currentColor.r;
+            gSlider.value = currentColor.g;
+            bSlider.value = currentColor.b;
+            
+            rInput.value = currentColor.r;
+            gInput.value = currentColor.g;
+            bInput.value = currentColor.b;
+            
+            rValue.textContent = currentColor.r;
+            gValue.textContent = currentColor.g;
+            bValue.textContent = currentColor.b;
+        }
+        
+        function rgbToCmyk(r, g, b) {
+            r = r / 255;
+            g = g / 255;
+            b = b / 255;
+            
+            const k = 1 - Math.max(r, g, b);
+            
+            if (k === 1) {
+                return { c: 0, m: 0, y: 0, k: 100 };
+            }
+            
+            const c = (1 - r - k) / (1 - k);
+            const m = (1 - g - k) / (1 - k);
+            const y = (1 - b - k) / (1 - k);
+            
+            return {
+                c: Math.round(c * 100),
+                m: Math.round(m * 100),
+                y: Math.round(y * 100),
+                k: Math.round(k * 100)
+            };
+        }
+        
+        function cmykToRgb(c, m, y, k) {
+            c = c / 100;
+            m = m / 100;
+            y = y / 100;
+            k = k / 100;
+            
+            const r = 255 * (1 - c) * (1 - k);
+            const g = 255 * (1 - m) * (1 - k);
+            const b = 255 * (1 - y) * (1 - k);
+            
+            return {
+                r: Math.round(r),
+                g: Math.round(g),
+                b: Math.round(b)
+            };
+        }
+        
+        function updateCMYKFromRGB() {
+            const { r, g, b } = currentColor;
+            const cmyk = rgbToCmyk(r, g, b);
+            
+            cSlider.value = cmyk.c;
+            mSlider.value = cmyk.m;
+            ySlider.value = cmyk.y;
+            kSlider.value = cmyk.k;
+            
+            cInput.value = cmyk.c;
+            mInput.value = cmyk.m;
+            yInput.value = cmyk.y;
+            kInput.value = cmyk.k;
+            
+            cValue.textContent = cmyk.c;
+            mValue.textContent = cmyk.m;
+            yValue.textContent = cmyk.y;
+            kValue.textContent = cmyk.k;
+        }
+        
+        function updateCMYKFromSliders() {
+            const c = parseInt(cSlider.value);
+            const m = parseInt(mSlider.value);
+            const y = parseInt(ySlider.value);
+            const k = parseInt(kSlider.value);
+            
+            cInput.value = c;
+            mInput.value = m;
+            yInput.value = y;
+            kInput.value = k;
+            
+            cValue.textContent = c;
+            mValue.textContent = m;
+            yValue.textContent = y;
+            kValue.textContent = k;
+        }
+        
+        function updateCMYKFromInputs() {
+            const c = parseInt(cInput.value);
+            const m = parseInt(mInput.value);
+            const y = parseInt(yInput.value);
+            const k = parseInt(kInput.value);
+            
+            cSlider.value = c;
+            mSlider.value = m;
+            ySlider.value = y;
+            kSlider.value = k;
+            
+            cValue.textContent = c;
+            mValue.textContent = m;
+            yValue.textContent = y;
+            kValue.textContent = k;
+        }
+        
+        function updateRGBFromCMYK() {
+            const c = parseInt(cSlider.value);
+            const m = parseInt(mSlider.value);
+            const y = parseInt(ySlider.value);
+            const k = parseInt(kSlider.value);
+            
+            const rgb = cmykToRgb(c, m, y, k);
+            currentColor = rgb;
+            updateRGBValues();
+        }
+        
+        function rgbToHsv(r, g, b) {
+            r = r / 255;
+            g = g / 255;
+            b = b / 255;
+            
+            const max = Math.max(r, g, b);
+            const min = Math.min(r, g, b);
+            const delta = max - min;
+            
+            let h = 0;
+            let s = 0;
+            let v = max;
+            
+            if (delta !== 0) {
+                s = delta / max;
+                
+                if (max === r) {
+                    h = (g - b) / delta + (g < b ? 6 : 0);
+                } else if (max === g) {
+                    h = (b - r) / delta + 2;
+                } else {
+                    h = (r - g) / delta + 4;
+                }
+                
+                h /= 6;
+            }
+            
+            return {
+                h: Math.round(h * 360),
+                s: Math.round(s * 100),
+                v: Math.round(v * 100)
+            };
+        }
+        
+        function hsvToRgb(h, s, v) {
+            h = h / 360;
+            s = s / 100;
+            v = v / 100;
+            
+            let r, g, b;
+            
+            const i = Math.floor(h * 6);
+            const f = h * 6 - i;
+            const p = v * (1 - s);
+            const q = v * (1 - f * s);
+            const t = v * (1 - (1 - f) * s);
+            
+            switch (i % 6) {
+                case 0: r = v; g = t; b = p; break;
+                case 1: r = q; g = v; b = p; break;
+                case 2: r = p; g = v; b = t; break;
+                case 3: r = p; g = q; b = v; break;
+                case 4: r = t; g = p; b = v; break;
+                case 5: r = v; g = p; b = q; break;
+            }
+            
+            return {
+                r: Math.round(r * 255),
+                g: Math.round(g * 255),
+                b: Math.round(b * 255)
+            };
+        }
+        
+        function updateHSVFromRGB() {
+            const { r, g, b } = currentColor;
+            const hsv = rgbToHsv(r, g, b);
+            
+            hSlider.value = hsv.h;
+            sSlider.value = hsv.s;
+            vSlider.value = hsv.v;
+            
+            hInput.value = hsv.h;
+            sInput.value = hsv.s;
+            vInput.value = hsv.v;
+            
+            hValue.textContent = hsv.h;
+            sValue.textContent = hsv.s;
+            vValue.textContent = hsv.v;
+        }
+        
+        function updateHSVFromSliders() {
+            const h = parseInt(hSlider.value);
+            const s = parseInt(sSlider.value);
+            const v = parseInt(vSlider.value);
+            
+            hInput.value = h;
+            sInput.value = s;
+            vInput.value = v;
+            
+            hValue.textContent = h;
+            sValue.textContent = s;
+            vValue.textContent = v;
+        }
+        
+        function updateHSVFromInputs() {
+            const h = parseInt(hInput.value);
+            const s = parseInt(sInput.value);
+            const v = parseInt(vInput.value);
+            
+            hSlider.value = h;
+            sSlider.value = s;
+            vSlider.value = v;
+            
+            hValue.textContent = h;
+            sValue.textContent = s;
+            vValue.textContent = v;
+        }
+        
+        function updateRGBFromHSV() {
+            const h = parseInt(hSlider.value);
+            const s = parseInt(sSlider.value);
+            const v = parseInt(vSlider.value);
+            
+            const rgb = hsvToRgb(h, s, v);
+            currentColor = rgb;
+            updateRGBValues();
+        }
+        
+        function rgbToHex(r, g, b) {
+            return "#" + ((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1);
+        }
+        
+        init();
+    </script>
+</body>
+</html>
