@@ -1,0 +1,868 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Анализатор графических файлов</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        h1 {
+            color: #333;
+            text-align: center;
+        }
+        .upload-section {
+            background-color: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+        .file-input {
+            margin-bottom: 10px;
+            padding: 10px;
+            border: 2px dashed #ddd;
+            border-radius: 4px;
+            width: 100%;
+        }
+        .progress-bar {
+            width: 100%;
+            height: 20px;
+            background-color: #f0f0f0;
+            border-radius: 4px;
+            margin-top: 10px;
+            display: none;
+        }
+        .progress {
+            height: 100%;
+            background-color: #4CAF50;
+            border-radius: 4px;
+            width: 0%;
+            transition: width 0.3s;
+        }
+        .results-section {
+            background-color: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+            font-size: 14px;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+        th {
+            background-color: #f2f2f2;
+            position: sticky;
+            top: 0;
+        }
+        tr:nth-child(even) {
+            background-color: #f9f9f9;
+        }
+        .error {
+            color: red;
+            font-weight: bold;
+        }
+        .file-count {
+            margin-top: 10px;
+            font-style: italic;
+        }
+        button {
+            background-color: #4CAF50;
+            color: white;
+            padding: 10px 15px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-right: 10px;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        button:disabled {
+            background-color: #cccccc;
+            cursor: not-allowed;
+        }
+        .details {
+            max-width: 300px;
+            word-wrap: break-word;
+        }
+        .quantization-table {
+            font-family: monospace;
+            font-size: 10px;
+            background-color: #f8f8f8;
+            padding: 5px;
+            border-radius: 3px;
+        }
+        .tooltip {
+            position: relative;
+            display: inline-block;
+            cursor: help;
+        }
+        .tooltip .tooltiptext {
+            visibility: hidden;
+            width: 300px;
+            background-color: #555;
+            color: #fff;
+            text-align: center;
+            border-radius: 6px;
+            padding: 5px;
+            position: absolute;
+            z-index: 1;
+            bottom: 125%;
+            left: 50%;
+            margin-left: -150px;
+            opacity: 0;
+            transition: opacity 0.3s;
+            font-size: 12px;
+        }
+        .tooltip:hover .tooltiptext {
+            visibility: visible;
+            opacity: 1;
+        }
+    </style>
+</head>
+<body>
+    <h1>Анализатор графических файлов</h1>
+    
+    <div class="upload-section">
+        <h2>Загрузка файлов</h2>
+        <input type="file" id="fileInput" class="file-input" multiple accept=".jpg,.jpeg,.gif,.tif,.tiff,.bmp,.png,.pcx">
+        <button id="analyzeBtn" disabled>Анализировать файлы</button>
+        <div class="progress-bar" id="progressBar">
+            <div class="progress" id="progress"></div>
+        </div>
+        <div class="file-count" id="fileCount"></div>
+    </div>
+    
+    <div class="results-section">
+        <h2>Результаты анализа</h2>
+        <div id="results"></div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const fileInput = document.getElementById('fileInput');
+            const analyzeBtn = document.getElementById('analyzeBtn');
+            const resultsDiv = document.getElementById('results');
+            const progressBar = document.getElementById('progressBar');
+            const progress = document.getElementById('progress');
+            const fileCount = document.getElementById('fileCount');
+            
+            let selectedFiles = [];
+            
+            fileInput.addEventListener('change', function(e) {
+                selectedFiles = Array.from(e.target.files);
+                
+                if (selectedFiles.length > 100000) {
+                    alert('Максимальное количество файлов: 100000. Будут обработаны первые 100000 файлов.');
+                    selectedFiles = selectedFiles.slice(0, 100000);
+                }
+                
+                fileCount.textContent = `Выбрано файлов: ${selectedFiles.length}`;
+                analyzeBtn.disabled = selectedFiles.length === 0;
+            });
+            
+            analyzeBtn.addEventListener('click', function() {
+                if (selectedFiles.length === 0) {
+                    alert('Пожалуйста, выберите файлы для анализа.');
+                    return;
+                }
+                
+                analyzeBtn.disabled = true;
+                progressBar.style.display = 'block';
+                progress.style.width = '0%';
+                
+                analyzeFiles(selectedFiles);
+            });
+            
+            function analyzeFiles(files) {
+                resultsDiv.innerHTML = '<p>Обработка файлов...</p>';
+                const results = [];
+                let processed = 0;
+                
+                files.forEach((file, index) => {
+                    const reader = new FileReader();
+                    
+                    reader.onload = function(e) {
+                        try {
+                            const fileInfo = analyzeImage(file, e.target.result);
+                            results.push(fileInfo);
+                        } catch (error) {
+                            results.push({
+                                name: file.name,
+                                error: 'Ошибка анализа: ' + error.message
+                            });
+                        }
+                        
+                        processed++;
+                        progress.style.width = `${(processed / files.length) * 100}%`;
+                        
+                        if (processed === files.length) {
+                            displayResults(results);
+                            analyzeBtn.disabled = false;
+                        }
+                    };
+                    
+                    reader.onerror = function() {
+                        results.push({
+                            name: file.name,
+                            error: 'Ошибка чтения файла'
+                        });
+                        
+                        processed++;
+                        progress.style.width = `${(processed / files.length) * 100}%`;
+                        
+                        if (processed === files.length) {
+                            displayResults(results);
+                            analyzeBtn.disabled = false;
+                        }
+                    };
+                    
+                    reader.readAsArrayBuffer(file);
+                });
+            }
+            
+            function analyzeImage(file, arrayBuffer) {
+                const extension = file.name.split('.').pop().toLowerCase();
+                const dataView = new DataView(arrayBuffer);
+                
+                const fileInfo = {
+                    name: file.name,
+                    size: file.size,
+                    type: file.type,
+                    extension: extension
+                };
+                
+                switch(extension) {
+                    case 'jpg':
+                    case 'jpeg':
+                        return analyzeJPEG(fileInfo, dataView);
+                    case 'gif':
+                        return analyzeGIF(fileInfo, dataView);
+                    case 'png':
+                        return analyzePNG(fileInfo, dataView);
+                    case 'bmp':
+                        return analyzeBMP(fileInfo, dataView);
+                    case 'tif':
+                    case 'tiff':
+                        return analyzeTIFF(fileInfo, dataView);
+                    case 'pcx':
+                        return analyzePCX(fileInfo, dataView);
+                    default:
+                        fileInfo.error = 'Неподдерживаемый формат файла';
+                        return fileInfo;
+                }
+            }
+            
+            function analyzeJPEG(fileInfo, dataView) {
+                let offset = 0;
+                
+                if (dataView.getUint16(0) !== 0xFFD8) {
+                    fileInfo.error = 'Неверная сигнатура JPEG';
+                    return fileInfo;
+                }
+                
+                offset += 2;
+                fileInfo.quantizationTables = [];
+                fileInfo.colorComponents = [];
+                
+                while (offset < dataView.byteLength - 1) {
+                    const marker = dataView.getUint16(offset);
+                    
+                    if (marker === 0xFFC0) {
+                        offset += 4;
+                        fileInfo.height = dataView.getUint16(offset);
+                        fileInfo.width = dataView.getUint16(offset + 2);
+                        fileInfo.bitDepth = dataView.getUint8(offset + 4) * 8;
+
+                        const numComponents = dataView.getUint8(offset + 5);
+                        fileInfo.colorComponentsCount = numComponents;
+                        for (let i = 0; i < numComponents; i++) {
+                            const compOffset = offset + 6 + i * 3;
+                            fileInfo.colorComponents.push({
+                                id: dataView.getUint8(compOffset),
+                                sampling: dataView.getUint8(compOffset + 1),
+                                quantTable: dataView.getUint8(compOffset + 2)
+                            });
+                        }
+                    }
+                    
+                    if (marker === 0xFFDB) {
+                        const segmentLength = dataView.getUint16(offset + 2);
+                        let tableOffset = offset + 4;
+                        
+                        while (tableOffset < offset + 2 + segmentLength) {
+                            const tableInfo = dataView.getUint8(tableOffset);
+                            const precision = (tableInfo >> 4) & 0x0F;
+                            const tableId = tableInfo & 0x0F;
+                            
+                            const table = [];
+                            for (let i = 0; i < 64; i++) {
+                                if (precision === 0) {
+                                    table.push(dataView.getUint8(tableOffset + 1 + i));
+                                } else {
+                                    table.push(dataView.getUint16(tableOffset + 1 + i * 2));
+                                }
+                            }
+                            
+                            fileInfo.quantizationTables.push({
+                                id: tableId,
+                                precision: precision === 0 ? 8 : 16,
+                                values: table.slice(0, 16) 
+                            });
+                            
+                            tableOffset += 1 + (precision === 0 ? 64 : 128);
+                        }
+                    }
+                    
+                    if (marker === 0xFFE0) {
+                        const segmentLength = dataView.getUint16(offset + 2);
+                        if (dataView.getUint32(offset + 4) === 0x4A464946) {
+                            const densityUnit = dataView.getUint8(offset + 11);
+                            const xDensity = dataView.getUint16(offset + 12);
+                            const yDensity = dataView.getUint16(offset + 14);
+                            
+                            if (densityUnit === 1) {
+                                fileInfo.resolution = `${xDensity} x ${yDensity} DPI`;
+                            } else if (densityUnit === 2) {
+                                fileInfo.resolution = `${Math.round(xDensity * 2.54)} x ${Math.round(yDensity * 2.54)} DPI`;
+                            } else {
+                                fileInfo.resolution = `${xDensity} x ${yDensity} (единицы не указаны)`;
+                            }
+                        }
+                    }
+                    
+                    const segmentLength = dataView.getUint16(offset + 2);
+                    offset += 2 + segmentLength;
+                }
+                
+                fileInfo.compression = 'JPEG (с потерями)';
+                fileInfo.format = 'JPEG';
+
+                fileInfo.additionalInfo = [];
+                if (fileInfo.quantizationTables.length > 0) {
+                    fileInfo.additionalInfo.push(`Таблицы квантования: ${fileInfo.quantizationTables.length}`);
+                }
+                if (fileInfo.colorComponentsCount) {
+                    fileInfo.additionalInfo.push(`Компоненты цвета: ${fileInfo.colorComponentsCount}`);
+                }
+                
+                return fileInfo;
+            }
+            
+            function analyzeGIF(fileInfo, dataView) {
+                const signature = String.fromCharCode(
+                    dataView.getUint8(0),
+                    dataView.getUint8(1),
+                    dataView.getUint8(2)
+                );
+                
+                if (signature !== 'GIF') {
+                    fileInfo.error = 'Неверная сигнатура GIF';
+                    return fileInfo;
+                }
+                
+                fileInfo.width = dataView.getUint16(6, true);
+                fileInfo.height = dataView.getUint16(8, true);
+                
+                const packedFields = dataView.getUint8(10);
+                const globalColorTableFlag = (packedFields & 0x80) !== 0;
+                const colorResolution = ((packedFields & 0x70) >> 4) + 1;
+                fileInfo.bitDepth = colorResolution * 8;
+                
+                fileInfo.resolution = 'Не указано';
+                fileInfo.compression = 'LZW';
+                fileInfo.format = 'GIF';
+
+                fileInfo.additionalInfo = [];
+
+                if (globalColorTableFlag) {
+                    const colorTableSize = 1 << ((packedFields & 0x07) + 1);
+                    fileInfo.colorCount = colorTableSize;
+                    fileInfo.additionalInfo.push(`Цветов в палитре: ${colorTableSize}`);
+                }
+
+                const version = String.fromCharCode(
+                    dataView.getUint8(3),
+                    dataView.getUint8(4),
+                    dataView.getUint8(5)
+                );
+                fileInfo.additionalInfo.push(`Версия: GIF${version}`);
+                
+                const backgroundColorIndex = dataView.getUint8(11);
+                fileInfo.additionalInfo.push(`Фонтовый цвет: ${backgroundColorIndex}`);
+                
+                const pixelAspectRatio = dataView.getUint8(12);
+                if (pixelAspectRatio !== 0) {
+                    fileInfo.additionalInfo.push(`Соотношение сторон: ${(pixelAspectRatio + 15) / 64}`);
+                }
+                
+                return fileInfo;
+            }
+            
+            function analyzePNG(fileInfo, dataView) {
+                if (dataView.getUint32(0) !== 0x89504E47 || dataView.getUint32(4) !== 0x0D0A1A0A) {
+                    fileInfo.error = 'Неверная сигнатура PNG';
+                    return fileInfo;
+                }
+                
+                let offset = 8;
+                fileInfo.chunks = [];
+                
+                while (offset < dataView.byteLength - 12) {
+                    const length = dataView.getUint32(offset);
+                    const chunkType = dataView.getUint32(offset + 4);
+                    
+                    if (chunkType === 0x49484452) { 
+                        fileInfo.width = dataView.getUint32(offset + 8);
+                        fileInfo.height = dataView.getUint32(offset + 12);
+                        fileInfo.bitDepth = dataView.getUint8(offset + 16);
+                        const colorType = dataView.getUint8(offset + 17);
+                        const compression = dataView.getUint8(offset + 18);
+                        const filter = dataView.getUint8(offset + 19);
+                        const interlace = dataView.getUint8(offset + 20);
+                        
+                        fileInfo.colorType = colorType;
+                        fileInfo.interlace = interlace;
+                        
+                        const colorTypes = {
+                            0: 'Grayscale',
+                            2: 'RGB',
+                            3: 'Indexed',
+                            4: 'Grayscale+Alpha',
+                            6: 'RGB+Alpha'
+                        };
+                        
+                        fileInfo.additionalInfo = [
+                            `Тип цвета: ${colorTypes[colorType] || 'Неизвестно'}`,
+                            `Чересстрочность: ${interlace === 0 ? 'Нет' : 'Adam7'}`,
+                            `Фильтр: ${filter === 0 ? 'Адаптивный' : 'Неизвестно'}`
+                        ];
+                    }
+                    
+                    if (chunkType === 0x70485973) {
+                        const xPixelsPerUnit = dataView.getUint32(offset + 8);
+                        const yPixelsPerUnit = dataView.getUint32(offset + 12);
+                        const unit = dataView.getUint8(offset + 16);
+                        
+                        if (unit === 1) {
+                            fileInfo.resolution = `${Math.round(xPixelsPerUnit * 0.0254)} x ${Math.round(yPixelsPerUnit * 0.0254)} DPI`;
+                        } else {
+                            fileInfo.resolution = `${xPixelsPerUnit} x ${yPixelsPerUnit} (единицы не указаны)`;
+                        }
+                    }
+                    
+                    if (chunkType === 0x504C5445) {
+                        const paletteSize = length / 3;
+                        fileInfo.additionalInfo.push(`Размер палитры: ${paletteSize} цветов`);
+                    }
+                    
+                    if (chunkType === 0x74455874) {
+                        let textEnd = offset + 8 + length;
+                        let textOffset = offset + 8;
+                        let keyword = '';
+                        
+                        while (textOffset < textEnd && dataView.getUint8(textOffset) !== 0) {
+                            keyword += String.fromCharCode(dataView.getUint8(textOffset));
+                            textOffset++;
+                        }
+                        
+                        textOffset++;
+                        
+                        let text = '';
+                        while (textOffset < textEnd) {
+                            text += String.fromCharCode(dataView.getUint8(textOffset));
+                            textOffset++;
+                        }
+                        
+                        if (!fileInfo.textChunks) fileInfo.textChunks = [];
+                        fileInfo.textChunks.push({keyword, text});
+                    }
+                    
+                    offset += 12 + length;
+                }
+                
+                if (!fileInfo.resolution) {
+                    fileInfo.resolution = 'Не указано';
+                }
+                
+                fileInfo.compression = 'Deflate';
+                fileInfo.format = 'PNG';
+                
+                return fileInfo;
+            }
+            
+            function analyzeBMP(fileInfo, dataView) {
+                if (dataView.getUint16(0) !== 0x424D) {
+                    fileInfo.error = 'Неверная сигнатура BMP';
+                    return fileInfo;
+                }
+                
+                fileInfo.width = dataView.getInt32(18, true);
+                fileInfo.height = dataView.getInt32(22, true);
+                fileInfo.bitDepth = dataView.getUint16(28, true);
+                
+                const xPixelsPerMeter = dataView.getInt32(38, true);
+                const yPixelsPerMeter = dataView.getInt32(42, true);
+                
+                if (xPixelsPerMeter > 0 && yPixelsPerMeter > 0) {
+                    fileInfo.resolution = `${Math.round(xPixelsPerMeter * 0.0254)} x ${Math.round(yPixelsPerMeter * 0.0254)} DPI`;
+                } else {
+                    fileInfo.resolution = 'Не указано';
+                }
+                
+                const compression = dataView.getUint32(30, true);
+                const compressionTypes = {
+                    0: 'BI_RGB (без сжатия)',
+                    1: 'BI_RLE8 (RLE 8 бит)',
+                    2: 'BI_RLE4 (RLE 4 бит)',
+                    3: 'BI_BITFIELDS (битовые поля)',
+                    4: 'BI_JPEG (JPEG)',
+                    5: 'BI_PNG (PNG)'
+                };
+                
+                fileInfo.compression = compressionTypes[compression] || 'Неизвестно';
+                fileInfo.format = 'BMP';
+
+                fileInfo.additionalInfo = [];
+ 
+                const imageSize = dataView.getUint32(34, true);
+                if (imageSize > 0) {
+                    fileInfo.additionalInfo.push(`Размер данных: ${imageSize} байт`);
+                }
+ 
+                const colorsUsed = dataView.getUint32(46, true);
+                if (colorsUsed > 0) {
+                    fileInfo.additionalInfo.push(`Цветов в палитре: ${colorsUsed}`);
+                }
+
+                const importantColors = dataView.getUint32(50, true);
+                if (importantColors > 0) {
+                    fileInfo.additionalInfo.push(`Важных цветов: ${importantColors}`);
+                }
+
+                const pixelOffset = dataView.getUint32(10, true);
+                fileInfo.additionalInfo.push(`Смещение данных: ${pixelOffset} байт`);
+                
+                return fileInfo;
+            }
+            
+            function analyzeTIFF(fileInfo, dataView) {
+                const byteOrder = dataView.getUint16(0);
+                if (byteOrder !== 0x4949 && byteOrder !== 0x4D4D) {
+                    fileInfo.error = 'Неверная сигнатура TIFF';
+                    return fileInfo;
+                }
+                
+                const littleEndian = byteOrder === 0x4949;
+                const version = dataView.getUint16(2, littleEndian);
+                if (version !== 42) {
+                    fileInfo.error = 'Неверная версия TIFF';
+                    return fileInfo;
+                }
+                
+                let ifdOffset = dataView.getUint32(4, littleEndian);
+                fileInfo.tiffTags = [];
+                
+                while (ifdOffset !== 0 && ifdOffset < dataView.byteLength) {
+                    const ifdEntryCount = dataView.getUint16(ifdOffset, littleEndian);
+                    
+                    for (let i = 0; i < ifdEntryCount; i++) {
+                        const entryOffset = ifdOffset + 2 + i * 12;
+                        const tag = dataView.getUint16(entryOffset, littleEndian);
+                        
+                        switch(tag) {
+                            case 256: 
+                                fileInfo.width = getTiffValue(dataView, entryOffset, littleEndian);
+                                break;
+                            case 257: 
+                                fileInfo.height = getTiffValue(dataView, entryOffset, littleEndian);
+                                break;
+                            case 258: 
+                                fileInfo.bitDepth = getTiffValue(dataView, entryOffset, littleEndian);
+                                break;
+                            case 259: 
+                                const compressionType = getTiffValue(dataView, entryOffset, littleEndian);
+                                fileInfo.compression = getTiffCompression(compressionType);
+                                break;
+                            case 262:
+                                const photoMetric = getTiffValue(dataView, entryOffset, littleEndian);
+                                fileInfo.photometric = getTiffPhotometric(photoMetric);
+                                break;
+                            case 282: 
+                                fileInfo.xResolution = getTiffRational(dataView, entryOffset, littleEndian);
+                                break;
+                            case 283: 
+                                fileInfo.yResolution = getTiffRational(dataView, entryOffset, littleEndian);
+                                break;
+                            case 296: 
+                                const resolutionUnit = getTiffValue(dataView, entryOffset, littleEndian);
+                                if (fileInfo.xResolution && fileInfo.yResolution) {
+                                    if (resolutionUnit === 2) {
+                                        fileInfo.resolution = `${fileInfo.xResolution} x ${fileInfo.yResolution} DPI`;
+                                    } else if (resolutionUnit === 3) {
+                                        fileInfo.resolution = `${Math.round(fileInfo.xResolution * 2.54)} x ${Math.round(fileInfo.yResolution * 2.54)} DPI`;
+                                    } else {
+                                        fileInfo.resolution = `${fileInfo.xResolution} x ${fileInfo.yResolution} (единицы не указаны)`;
+                                    }
+                                }
+                                break;
+                        }
+
+                        fileInfo.tiffTags.push({
+                            tag: tag,
+                            name: getTiffTagName(tag),
+                            value: getTiffValue(dataView, entryOffset, littleEndian)
+                        });
+                    }
+                    
+                    ifdOffset = dataView.getUint32(ifdOffset + 2 + ifdEntryCount * 12, littleEndian);
+                }
+                
+                if (!fileInfo.resolution) {
+                    fileInfo.resolution = 'Не указано';
+                }
+                
+                fileInfo.format = 'TIFF';
+                
+                fileInfo.additionalInfo = [];
+                if (fileInfo.photometric) {
+                    fileInfo.additionalInfo.push(`Фотометрика: ${fileInfo.photometric}`);
+                }
+                if (fileInfo.tiffTags.length > 0) {
+                    fileInfo.additionalInfo.push(`Тегов TIFF: ${fileInfo.tiffTags.length}`);
+                }
+                
+                return fileInfo;
+            }
+            
+            function getTiffTagName(tag) {
+                const tags = {
+                    256: 'ImageWidth',
+                    257: 'ImageHeight',
+                    258: 'BitsPerSample',
+                    259: 'Compression',
+                    262: 'PhotometricInterpretation',
+                    282: 'XResolution',
+                    283: 'YResolution',
+                    296: 'ResolutionUnit'
+                };
+                return tags[tag] || `Тег ${tag}`;
+            }
+            
+            function getTiffPhotometric(type) {
+                switch(type) {
+                    case 0: return 'WhiteIsZero';
+                    case 1: return 'BlackIsZero';
+                    case 2: return 'RGB';
+                    case 3: return 'RGB Palette';
+                    case 4: return 'Transparency Mask';
+                    case 5: return 'CMYK';
+                    case 6: return 'YCbCr';
+                    case 8: return 'CIELab';
+                    default: return 'Неизвестно';
+                }
+            }
+            
+            function analyzePCX(fileInfo, dataView) {
+                if (dataView.getUint8(0) !== 10) {
+                    fileInfo.error = 'Неверная сигнатура PCX';
+                    return fileInfo;
+                }
+                
+                const version = dataView.getUint8(1);
+                const versions = {
+                    0: 'PC Paintbrush 2.5',
+                    2: 'PC Paintbrush 2.8 с палитрой',
+                    3: 'PC Paintbrush 2.8 без палитры',
+                    5: 'PC Paintbrush 3.0'
+                };
+                
+                const xMin = dataView.getUint16(2, true);
+                const yMin = dataView.getUint16(4, true);
+                const xMax = dataView.getUint16(6, true);
+                const yMax = dataView.getUint16(8, true);
+                
+                fileInfo.width = xMax - xMin + 1;
+                fileInfo.height = yMax - yMin + 1;
+                fileInfo.bitDepth = dataView.getUint8(3) * dataView.getUint8(65);
+                
+                const hRes = dataView.getUint16(10, true);
+                const vRes = dataView.getUint16(12, true);
+                fileInfo.resolution = `${hRes} x ${vRes} DPI`;
+                
+                const encoding = dataView.getUint8(2);
+                fileInfo.compression = encoding === 1 ? 'RLE' : 'Без сжатия';
+                fileInfo.format = 'PCX';
+                
+                fileInfo.additionalInfo = [
+                    `Версия: ${versions[version] || 'Неизвестно'}`,
+                    `Плоскостей: ${dataView.getUint8(65)}`,
+                    `Байтов на линию: ${dataView.getUint16(66, true)}`
+                ];
+                
+                const paletteType = dataView.getUint16(68, true);
+                if (paletteType === 1) {
+                    fileInfo.additionalInfo.push('Тип палитры: Цветная/Черно-белая');
+                }
+                
+                return fileInfo;
+            }
+            
+            function getTiffValue(dataView, entryOffset, littleEndian) {
+                const type = dataView.getUint16(entryOffset + 2, littleEndian);
+                const count = dataView.getUint32(entryOffset + 4, littleEndian);
+                const valueOffset = dataView.getUint32(entryOffset + 8, littleEndian);
+                
+                if (count === 1) {
+                    switch(type) {
+                        case 1: 
+                        case 6: 
+                            return dataView.getUint8(valueOffset);
+                        case 3: 
+                            return dataView.getUint16(valueOffset, littleEndian);
+                        case 4: 
+                        case 9: 
+                            return dataView.getUint32(valueOffset, littleEndian);
+                        default:
+                            return null;
+                    }
+                }
+                
+                return null;
+            }
+            
+            function getTiffRational(dataView, entryOffset, littleEndian) {
+                const type = dataView.getUint16(entryOffset + 2, littleEndian);
+                const count = dataView.getUint32(entryOffset + 4, littleEndian);
+                const valueOffset = dataView.getUint32(entryOffset + 8, littleEndian);
+                
+                if (type === 5 && count === 1) {
+                    const numerator = dataView.getUint32(valueOffset, littleEndian);
+                    const denominator = dataView.getUint32(valueOffset + 4, littleEndian);
+                    return denominator !== 0 ? numerator / denominator : numerator;
+                }
+                
+                return null;
+            }
+            
+            function getTiffCompression(type) {
+                switch(type) {
+                    case 1: return 'Без сжатия';
+                    case 2: return 'CCITT Group 3';
+                    case 3: return 'CCITT Group 4';
+                    case 4: return 'LZW';
+                    case 5: return 'JPEG';
+                    case 6: return 'PackBits';
+                    case 7: return 'Deflate';
+                    default: return 'Неизвестно';
+                }
+            }
+            
+            function displayResults(results) {
+                if (results.length === 0) {
+                    resultsDiv.innerHTML = '<p>Нет данных для отображения.</p>';
+                    return;
+                }
+                
+                let tableHTML = `
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Имя файла</th>
+                                <th>Размер (пиксели)</th>
+                                <th>Разрешение (DPI)</th>
+                                <th>Глубина цвета (бит)</th>
+                                <th>Сжатие</th>
+                                <th>Формат</th>
+                                <th class="details">Дополнительная информация</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                `;
+                
+                results.forEach(result => {
+                    if (result.error) {
+                        tableHTML += `
+                            <tr>
+                                <td>${result.name}</td>
+                                <td colspan="6" class="error">${result.error}</td>
+                            </tr>
+                        `;
+                    } else {
+                        let additionalInfo = 'Нет дополнительной информации';
+                        
+                        if (result.additionalInfo && result.additionalInfo.length > 0) {
+                            additionalInfo = result.additionalInfo.join('<br>');
+                        }
+                        
+                        if (result.format === 'JPEG' && result.quantizationTables) {
+                            if (result.quantizationTables.length > 0) {
+                                additionalInfo += `<div class="quantization-table">`;
+                                result.quantizationTables.forEach(table => {
+                                    additionalInfo += `Таблица ${table.id}: [${table.values.join(', ')}]<br>`;
+                                });
+                                additionalInfo += `</div>`;
+                            }
+                        }
+                        
+                        if (result.format === 'GIF' && result.colorCount) {
+                            additionalInfo += `<br><span class="tooltip">Цветов: ${result.colorCount}
+                                <span class="tooltiptext">Количество цветов в глобальной палитре GIF</span>
+                            </span>`;
+                        }
+                        
+                        if (result.format === 'PNG' && result.colorType !== undefined) {
+                            const colorTypes = ['Grayscale', 'RGB', 'Indexed', 'Grayscale+Alpha', 'RGB+Alpha'];
+                            additionalInfo += `<br><span class="tooltip">Тип цвета: ${colorTypes[result.colorType] || 'Неизвестно'}
+                                <span class="tooltiptext">Определяет цветовое пространство PNG изображения</span>
+                            </span>`;
+                        }
+                        
+                        if (result.format === 'BMP' && result.additionalInfo) {
+                            additionalInfo = result.additionalInfo.join('<br>');
+                        }
+                        
+                        if (result.format === 'TIFF' && result.photometric) {
+                            additionalInfo += `<br><span class="tooltip">Фотометрика: ${result.photometric}
+                                <span class="tooltiptext">Определяет цветовое пространство TIFF изображения</span>
+                            </span>`;
+                        }
+                        
+                        tableHTML += `
+                            <tr>
+                                <td>${result.name}</td>
+                                <td>${result.width || 'N/A'} x ${result.height || 'N/A'}</td>
+                                <td>${result.resolution || 'N/A'}</td>
+                                <td>${result.bitDepth || 'N/A'}</td>
+                                <td>${result.compression || 'N/A'}</td>
+                                <td>${result.format || 'N/A'}</td>
+                                <td class="details">${additionalInfo}</td>
+                            </tr>
+                        `;
+                    }
+                });
+                
+                tableHTML += `
+                        </tbody>
+                    </table>
+                `;
+                
+                resultsDiv.innerHTML = tableHTML;
+            }
+        });
+    </script>
+</body>
+</html>
