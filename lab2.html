@@ -5,160 +5,616 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Анализатор графических файлов</title>
     <style>
+        :root {
+            --primary: #6366f1;
+            --primary-dark: #4f46e5;
+            --secondary: #10b981;
+            --background: #f8fafc;
+            --card: #ffffff;
+            --text: #1e293b;
+            --text-light: #64748b;
+            --border: #e2e8f0;
+            --shadow: rgba(99, 102, 241, 0.08);
+            --success: #10b981;
+            --warning: #f59e0b;
+            --error: #ef4444;
+            --radius-lg: 20px;
+            --radius-md: 12px;
+            --radius-sm: 8px;
+            --transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        
         body {
-            font-family: Arial, sans-serif;
-            max-width: 1400px;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            max-width: 1600px;
             margin: 0 auto;
-            padding: 20px;
-            background-color: #f5f5f5;
+            padding: 32px;
+            background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+            min-height: 100vh;
         }
+        
         h1 {
-            color: #333;
+            color: var(--text);
             text-align: center;
+            margin: 0 0 40px 0;
+            font-size: 48px;
+            font-weight: 800;
+            background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            letter-spacing: -0.5px;
         }
+        
+        .subtitle {
+            color: var(--text-light);
+            text-align: center;
+            font-size: 18px;
+            margin: -20px 0 40px 0;
+            font-weight: 500;
+        }
+        
         .upload-section {
-            background-color: white;
-            padding: 20px;
-            border-radius: 8px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-            margin-bottom: 20px;
+            background: var(--card);
+            padding: 40px;
+            border-radius: var(--radius-lg);
+            box-shadow: 0 10px 40px var(--shadow);
+            margin-bottom: 32px;
+            border: 1px solid var(--border);
+            position: relative;
+            overflow: hidden;
         }
-        .file-input {
-            margin-bottom: 10px;
-            padding: 10px;
-            border: 2px dashed #ddd;
-            border-radius: 4px;
-            width: 100%;
-        }
-        .progress-bar {
-            width: 100%;
-            height: 20px;
-            background-color: #f0f0f0;
-            border-radius: 4px;
-            margin-top: 10px;
-            display: none;
-        }
-        .progress {
-            height: 100%;
-            background-color: #4CAF50;
-            border-radius: 4px;
-            width: 0%;
-            transition: width 0.3s;
-        }
-        .results-section {
-            background-color: white;
-            padding: 20px;
-            border-radius: 8px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-        }
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 20px;
-            font-size: 14px;
-        }
-        th, td {
-            border: 1px solid #ddd;
-            padding: 8px;
-            text-align: left;
-        }
-        th {
-            background-color: #f2f2f2;
-            position: sticky;
+        
+        .upload-section::before {
+            content: '';
+            position: absolute;
             top: 0;
+            left: 0;
+            right: 0;
+            height: 6px;
+            background: linear-gradient(90deg, var(--primary), var(--secondary));
         }
-        tr:nth-child(even) {
-            background-color: #f9f9f9;
+        
+        h2 {
+            color: var(--text);
+            margin: 0 0 24px 0;
+            font-size: 28px;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 12px;
         }
-        .error {
-            color: red;
-            font-weight: bold;
-        }
-        .file-count {
-            margin-top: 10px;
-            font-style: italic;
-        }
-        button {
-            background-color: #4CAF50;
-            color: white;
-            padding: 10px 15px;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-            margin-right: 10px;
-        }
-        button:hover {
-            background-color: #45a049;
-        }
-        button:disabled {
-            background-color: #cccccc;
-            cursor: not-allowed;
-        }
-        .details {
-            max-width: 300px;
-            word-wrap: break-word;
-        }
-        .quantization-table {
-            font-family: monospace;
-            font-size: 10px;
-            background-color: #f8f8f8;
-            padding: 5px;
+        
+        h2::before {
+            content: '';
+            width: 6px;
+            height: 28px;
+            background: linear-gradient(180deg, var(--primary) 0%, var(--secondary) 100%);
             border-radius: 3px;
         }
+        
+        .file-input-wrapper {
+            position: relative;
+            margin-bottom: 24px;
+        }
+        
+        .file-input {
+            width: 100%;
+            padding: 32px;
+            border: 3px dashed var(--border);
+            border-radius: var(--radius-md);
+            background: var(--background);
+            font-size: 16px;
+            color: var(--text-light);
+            transition: var(--transition);
+            cursor: pointer;
+        }
+        
+        .file-input:hover {
+            border-color: var(--primary);
+            background: rgba(99, 102, 241, 0.05);
+        }
+        
+        .file-input::file-selector-button {
+            background: var(--primary);
+            color: white;
+            padding: 16px 32px;
+            border: none;
+            border-radius: var(--radius-sm);
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--transition);
+            margin-right: 16px;
+        }
+        
+        .file-input::file-selector-button:hover {
+            background: var(--primary-dark);
+            transform: translateY(-2px);
+        }
+        
+        .button-group {
+            display: flex;
+            gap: 16px;
+            margin-top: 24px;
+        }
+        
+        .btn {
+            padding: 18px 36px;
+            border: none;
+            border-radius: var(--radius-md);
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--transition);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+            color: white;
+            box-shadow: 0 4px 16px rgba(99, 102, 241, 0.3);
+        }
+        
+        .btn-primary:hover:not(:disabled) {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 24px rgba(99, 102, 241, 0.4);
+        }
+        
+        .btn-primary:disabled {
+            background: var(--border);
+            color: var(--text-light);
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+        
+        .btn-secondary {
+            background: white;
+            color: var(--text);
+            border: 2px solid var(--border);
+        }
+        
+        .btn-secondary:hover {
+            border-color: var(--primary);
+            color: var(--primary);
+        }
+        
+        .progress-container {
+            margin-top: 32px;
+        }
+        
+        .progress-info {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 12px;
+            color: var(--text);
+            font-weight: 500;
+        }
+        
+        .progress-bar {
+            width: 100%;
+            height: 12px;
+            background: var(--border);
+            border-radius: 6px;
+            overflow: hidden;
+            margin-bottom: 8px;
+        }
+        
+        .progress {
+            height: 100%;
+            background: linear-gradient(90deg, var(--primary), var(--secondary));
+            border-radius: 6px;
+            width: 0%;
+            transition: width 0.4s ease;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .progress::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(90deg, 
+                transparent 0%, 
+                rgba(255, 255, 255, 0.3) 50%, 
+                transparent 100%);
+            animation: shimmer 2s infinite;
+        }
+        
+        @keyframes shimmer {
+            0% { transform: translateX(-100%); }
+            100% { transform: translateX(100%); }
+        }
+        
+        .file-count {
+            color: var(--text-light);
+            font-size: 15px;
+            font-weight: 500;
+        }
+        
+        .results-section {
+            background: var(--card);
+            padding: 40px;
+            border-radius: var(--radius-lg);
+            box-shadow: 0 10px 40px var(--shadow);
+            border: 1px solid var(--border);
+        }
+        
+        .stats-bar {
+            display: flex;
+            gap: 24px;
+            margin-bottom: 32px;
+            flex-wrap: wrap;
+        }
+        
+        .stat-card {
+            flex: 1;
+            min-width: 200px;
+            background: var(--background);
+            padding: 24px;
+            border-radius: var(--radius-md);
+            border: 1px solid var(--border);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        
+        .stat-value {
+            font-size: 36px;
+            font-weight: 800;
+            color: var(--primary);
+            line-height: 1;
+        }
+        
+        .stat-label {
+            color: var(--text-light);
+            font-size: 14px;
+            font-weight: 600;
+            margin-top: 8px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0;
+            margin-top: 24px;
+            font-size: 14px;
+            border-radius: var(--radius-md);
+            overflow: hidden;
+            box-shadow: 0 2px 8px var(--shadow);
+        }
+        
+        thead {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+        }
+        
+        th {
+            color: white;
+            padding: 20px 16px;
+            text-align: left;
+            font-weight: 600;
+            font-size: 15px;
+            position: sticky;
+            top: 0;
+            border-right: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        th:last-child {
+            border-right: none;
+        }
+        
+        td {
+            padding: 20px 16px;
+            border-bottom: 1px solid var(--border);
+            color: var(--text);
+        }
+        
+        tbody tr {
+            transition: var(--transition);
+            background: white;
+        }
+        
+        tbody tr:hover {
+            background: var(--background);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px var(--shadow);
+        }
+        
+        tbody tr:nth-child(even) {
+            background: #fcfcfc;
+        }
+        
+        .error {
+            color: var(--error);
+            font-weight: 600;
+            background: rgba(239, 68, 68, 0.1);
+            padding: 12px 16px;
+            border-radius: var(--radius-sm);
+            border-left: 4px solid var(--error);
+            margin: 8px 0;
+        }
+        
+        .details {
+            max-width: 400px;
+            word-wrap: break-word;
+            color: var(--text-light);
+            line-height: 1.6;
+        }
+        
+        .quantization-table {
+            font-family: 'JetBrains Mono', 'Courier New', monospace;
+            font-size: 11px;
+            background: var(--background);
+            padding: 12px;
+            border-radius: var(--radius-sm);
+            border: 1px solid var(--border);
+            margin-top: 8px;
+            max-height: 120px;
+            overflow-y: auto;
+        }
+        
+        .full-quantization-table {
+            font-family: 'JetBrains Mono', 'Courier New', monospace;
+            font-size: 11px;
+            background: var(--background);
+            padding: 12px;
+            border-radius: var(--radius-sm);
+            border: 1px solid var(--border);
+            margin-top: 8px;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+        
         .tooltip {
             position: relative;
             display: inline-block;
             cursor: help;
+            color: var(--primary);
+            font-weight: 500;
         }
+        
         .tooltip .tooltiptext {
             visibility: hidden;
             width: 300px;
-            background-color: #555;
-            color: #fff;
+            background: var(--text);
+            color: white;
             text-align: center;
-            border-radius: 6px;
-            padding: 5px;
+            border-radius: var(--radius-sm);
+            padding: 12px;
             position: absolute;
-            z-index: 1;
+            z-index: 1000;
             bottom: 125%;
             left: 50%;
-            margin-left: -150px;
+            transform: translateX(-50%);
             opacity: 0;
             transition: opacity 0.3s;
-            font-size: 12px;
+            font-size: 13px;
+            font-weight: normal;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+            line-height: 1.5;
         }
+        
         .tooltip:hover .tooltiptext {
             visibility: visible;
             opacity: 1;
+        }
+        
+        .format-badge {
+            display: inline-block;
+            padding: 6px 12px;
+            background: var(--background);
+            color: var(--primary);
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 700;
+            border: 1px solid var(--border);
+        }
+        
+        .resolution-badge {
+            display: inline-block;
+            padding: 6px 12px;
+            background: rgba(16, 185, 129, 0.1);
+            color: var(--secondary);
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 700;
+            border: 1px solid rgba(16, 185, 129, 0.2);
+        }
+        
+        .empty-state {
+            text-align: center;
+            padding: 80px 40px;
+            color: var(--text-light);
+        }
+        
+        .empty-state-icon {
+            font-size: 64px;
+            margin-bottom: 24px;
+            opacity: 0.5;
+        }
+        
+        .empty-state h3 {
+            color: var(--text);
+            margin: 0 0 12px 0;
+            font-size: 24px;
+            font-weight: 600;
+        }
+        
+        .loading {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 60px 40px;
+        }
+        
+        .spinner {
+            width: 48px;
+            height: 48px;
+            border: 4px solid var(--border);
+            border-top: 4px solid var(--primary);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-bottom: 24px;
+        }
+        
+        .show-more {
+            color: var(--primary);
+            cursor: pointer;
+            font-weight: 600;
+            margin-top: 8px;
+            display: inline-block;
+        }
+        
+        .show-more:hover {
+            text-decoration: underline;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        @media (max-width: 1024px) {
+            body {
+                padding: 24px;
+            }
+            
+            .upload-section,
+            .results-section {
+                padding: 32px;
+            }
+            
+            table {
+                display: block;
+                overflow-x: auto;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            body {
+                padding: 16px;
+            }
+            
+            h1 {
+                font-size: 36px;
+            }
+            
+            .upload-section,
+            .results-section {
+                padding: 24px;
+            }
+            
+            .stats-bar {
+                flex-direction: column;
+            }
+            
+            .stat-card {
+                width: 100%;
+            }
+            
+            .button-group {
+                flex-direction: column;
+            }
+            
+            .btn {
+                width: 100%;
+                justify-content: center;
+            }
         }
     </style>
 </head>
 <body>
     <h1>Анализатор графических файлов</h1>
+    <p class="subtitle">Детальный анализ метаданных изображений в реальном времени</p>
     
     <div class="upload-section">
         <h2>Загрузка файлов</h2>
-        <input type="file" id="fileInput" class="file-input" multiple accept=".jpg,.jpeg,.gif,.tif,.tiff,.bmp,.png,.pcx">
-        <button id="analyzeBtn" disabled>Анализировать файлы</button>
-        <div class="progress-bar" id="progressBar">
-            <div class="progress" id="progress"></div>
+        <div class="file-input-wrapper">
+            <input type="file" id="fileInput" class="file-input" multiple accept=".jpg,.jpeg,.gif,.tif,.tiff,.bmp,.png,.pcx">
         </div>
-        <div class="file-count" id="fileCount"></div>
+        
+        <div class="file-count" id="fileCount">Выберите файлы для анализа</div>
+        
+        <div class="progress-container">
+            <div class="progress-info">
+                <span>Прогресс обработки</span>
+                <span id="progressPercent">0%</span>
+            </div>
+            <div class="progress-bar">
+                <div class="progress" id="progress"></div>
+            </div>
+        </div>
+        
+        <div class="button-group">
+            <button id="analyzeBtn" class="btn btn-primary" disabled>
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                    <polyline points="7 10 12 15 17 10"/>
+                    <line x1="12" y1="15" x2="12" y2="3"/>
+                </svg>
+                Анализировать файлы
+            </button>
+            <button id="clearBtn" class="btn btn-secondary">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <polyline points="3 6 5 6 21 6"/>
+                    <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
+                </svg>
+                Очистить
+            </button>
+        </div>
     </div>
     
     <div class="results-section">
         <h2>Результаты анализа</h2>
-        <div id="results"></div>
+        
+        <div class="stats-bar" id="statsBar">
+            <div class="stat-card">
+                <div class="stat-value" id="totalFiles">0</div>
+                <div class="stat-label">Файлов</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="successFiles">0</div>
+                <div class="stat-label">Успешно</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="errorFiles">0</div>
+                <div class="stat-label">Ошибок</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="avgSize">0</div>
+                <div class="stat-label">Средний размер (КБ)</div>
+            </div>
+        </div>
+        
+        <div id="results">
+            <div class="empty-state">
+                <div class="empty-state-icon">📊</div>
+                <h3>Нет данных для отображения</h3>
+                <p>Загрузите графические файлы для начала анализа</p>
+            </div>
+        </div>
     </div>
 
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             const fileInput = document.getElementById('fileInput');
             const analyzeBtn = document.getElementById('analyzeBtn');
+            const clearBtn = document.getElementById('clearBtn');
             const resultsDiv = document.getElementById('results');
-            const progressBar = document.getElementById('progressBar');
-            const progress = document.getElementById('progress');
+            const progressBar = document.getElementById('progress');
+            const progressPercent = document.getElementById('progressPercent');
             const fileCount = document.getElementById('fileCount');
+            const statsBar = document.getElementById('statsBar');
+            const totalFiles = document.getElementById('totalFiles');
+            const successFiles = document.getElementById('successFiles');
+            const errorFiles = document.getElementById('errorFiles');
+            const avgSize = document.getElementById('avgSize');
             
             let selectedFiles = [];
             
@@ -170,8 +626,17 @@
                     selectedFiles = selectedFiles.slice(0, 100000);
                 }
                 
-                fileCount.textContent = `Выбрано файлов: ${selectedFiles.length}`;
+                const totalSize = selectedFiles.reduce((sum, file) => sum + file.size, 0);
+                const avgSizeKB = (totalSize / selectedFiles.length / 1024).toFixed(1);
+                
+                fileCount.innerHTML = `
+                    <strong>${selectedFiles.length} файлов выбрано</strong>
+                    <span style="color: var(--text-light); margin-left: 12px;">Общий размер: ${(totalSize / 1024 / 1024).toFixed(2)} МБ</span>
+                `;
+                
                 analyzeBtn.disabled = selectedFiles.length === 0;
+                
+                updateStats(selectedFiles.length, 0, 0, avgSizeKB);
             });
             
             analyzeBtn.addEventListener('click', function() {
@@ -181,16 +646,45 @@
                 }
                 
                 analyzeBtn.disabled = true;
-                progressBar.style.display = 'block';
-                progress.style.width = '0%';
+                analyzeBtn.innerHTML = `
+                    <div class="spinner" style="width: 20px; height: 20px; border-width: 2px;"></div>
+                    Обработка...
+                `;
+                
+                resultsDiv.innerHTML = `
+                    <div class="loading">
+                        <div class="spinner"></div>
+                        <p>Анализируем файлы... Пожалуйста, подождите</p>
+                    </div>
+                `;
                 
                 analyzeFiles(selectedFiles);
             });
             
+            clearBtn.addEventListener('click', function() {
+                fileInput.value = '';
+                selectedFiles = [];
+                fileCount.textContent = 'Выберите файлы для анализа';
+                analyzeBtn.disabled = true;
+                progressBar.style.width = '0%';
+                progressPercent.textContent = '0%';
+                
+                resultsDiv.innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-state-icon">📊</div>
+                        <h3>Нет данных для отображения</h3>
+                        <p>Загрузите графические файлы для начала анализа</p>
+                    </div>
+                `;
+                
+                updateStats(0, 0, 0, 0);
+            });
+            
             function analyzeFiles(files) {
-                resultsDiv.innerHTML = '<p>Обработка файлов...</p>';
                 const results = [];
                 let processed = 0;
+                let successCount = 0;
+                let errorCount = 0;
                 
                 files.forEach((file, index) => {
                     const reader = new FileReader();
@@ -199,19 +693,35 @@
                         try {
                             const fileInfo = analyzeImage(file, e.target.result);
                             results.push(fileInfo);
+                            successCount++;
                         } catch (error) {
                             results.push({
                                 name: file.name,
                                 error: 'Ошибка анализа: ' + error.message
                             });
+                            errorCount++;
                         }
                         
                         processed++;
-                        progress.style.width = `${(processed / files.length) * 100}%`;
+                        const percent = Math.round((processed / files.length) * 100);
+                        progressBar.style.width = `${percent}%`;
+                        progressPercent.textContent = `${percent}%`;
                         
                         if (processed === files.length) {
                             displayResults(results);
                             analyzeBtn.disabled = false;
+                            analyzeBtn.innerHTML = `
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                                    <polyline points="7 10 12 15 17 10"/>
+                                    <line x1="12" y1="15" x2="12" y2="3"/>
+                                </svg>
+                                Анализировать файлы
+                            `;
+                            
+                            const totalSize = files.reduce((sum, file) => sum + file.size, 0);
+                            const avgSizeKB = (totalSize / files.length / 1024).toFixed(1);
+                            updateStats(files.length, successCount, errorCount, avgSizeKB);
                         }
                     };
                     
@@ -220,17 +730,34 @@
                             name: file.name,
                             error: 'Ошибка чтения файла'
                         });
+                        errorCount++;
                         
                         processed++;
-                        progress.style.width = `${(processed / files.length) * 100}%`;
+                        const percent = Math.round((processed / files.length) * 100);
+                        progressBar.style.width = `${percent}%`;
+                        progressPercent.textContent = `${percent}%`;
                         
                         if (processed === files.length) {
                             displayResults(results);
                             analyzeBtn.disabled = false;
+                            analyzeBtn.innerHTML = `
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                                    <polyline points="7 10 12 15 17 10"/>
+                                    <line x1="12" y1="15" x2="12" y2="3"/>
+                                </svg>
+                                Анализировать файлы
+                            `;
+                            
+                            const totalSize = files.reduce((sum, file) => sum + file.size, 0);
+                            const avgSizeKB = (totalSize / files.length / 1024).toFixed(1);
+                            updateStats(files.length, successCount, errorCount, avgSizeKB);
                         }
                     };
                     
-                    reader.readAsArrayBuffer(file);
+                    setTimeout(() => {
+                        reader.readAsArrayBuffer(file);
+                    }, index * 50);
                 });
             }
             
@@ -281,21 +808,28 @@
                 while (offset < dataView.byteLength - 1) {
                     const marker = dataView.getUint16(offset);
                     
-                    if (marker === 0xFFC0) {
-                        offset += 4;
-                        fileInfo.height = dataView.getUint16(offset);
-                        fileInfo.width = dataView.getUint16(offset + 2);
-                        fileInfo.bitDepth = dataView.getUint8(offset + 4) * 8;
-
-                        const numComponents = dataView.getUint8(offset + 5);
-                        fileInfo.colorComponentsCount = numComponents;
-                        for (let i = 0; i < numComponents; i++) {
-                            const compOffset = offset + 6 + i * 3;
-                            fileInfo.colorComponents.push({
-                                id: dataView.getUint8(compOffset),
-                                sampling: dataView.getUint8(compOffset + 1),
-                                quantTable: dataView.getUint8(compOffset + 2)
-                            });
+                    if (marker >= 0xFFC0 && marker <= 0xFFCF && marker !== 0xFFC4 && marker !== 0xFFC8) {
+                        const segmentLength = dataView.getUint16(offset + 2);
+        
+                        if (marker === 0xFFC0 || marker === 0xFFC1 || marker === 0xFFC2) {
+    
+                            const precision = dataView.getUint8(offset + 4);
+                            fileInfo.height = dataView.getUint16(offset + 5);
+                            fileInfo.width = dataView.getUint16(offset + 7);
+                            fileInfo.bitDepth = precision * 8;
+    
+                            const numComponents = dataView.getUint8(offset + 9);
+                            fileInfo.colorComponentsCount = numComponents;
+                            fileInfo.colorComponents = [];
+                            
+                            for (let i = 0; i < numComponents; i++) {
+                                const compOffset = offset + 10 + i * 3;
+                                fileInfo.colorComponents.push({
+                                    id: dataView.getUint8(compOffset),
+                                    sampling: dataView.getUint8(compOffset + 1),
+                                    quantTable: dataView.getUint8(compOffset + 2)
+                                });
+                            }
                         }
                     }
                     
@@ -320,7 +854,7 @@
                             fileInfo.quantizationTables.push({
                                 id: tableId,
                                 precision: precision === 0 ? 8 : 16,
-                                values: table.slice(0, 16) 
+                                values: table
                             });
                             
                             tableOffset += 1 + (precision === 0 ? 64 : 128);
@@ -347,10 +881,27 @@
                     const segmentLength = dataView.getUint16(offset + 2);
                     offset += 2 + segmentLength;
                 }
+    
+                if (!fileInfo.width) {
+                    offset = 2;
+                    while (offset < dataView.byteLength - 1) {
+                        const marker = dataView.getUint16(offset);
+                        if (marker === 0xFFC2) { 
+                            const segmentLength = dataView.getUint16(offset + 2);
+                            const precision = dataView.getUint8(offset + 4);
+                            fileInfo.height = dataView.getUint16(offset + 5);
+                            fileInfo.width = dataView.getUint16(offset + 7);
+                            fileInfo.bitDepth = precision * 8;
+                            break;
+                        }
+                        const segmentLength = dataView.getUint16(offset + 2);
+                        offset += 2 + segmentLength;
+                    }
+                }
                 
                 fileInfo.compression = 'JPEG (с потерями)';
                 fileInfo.format = 'JPEG';
-
+    
                 fileInfo.additionalInfo = [];
                 if (fileInfo.quantizationTables.length > 0) {
                     fileInfo.additionalInfo.push(`Таблицы квантования: ${fileInfo.quantizationTables.length}`);
@@ -358,10 +909,13 @@
                 if (fileInfo.colorComponentsCount) {
                     fileInfo.additionalInfo.push(`Компоненты цвета: ${fileInfo.colorComponentsCount}`);
                 }
+                if (fileInfo.bitDepth) {
+                    fileInfo.additionalInfo.push(`Бит на компонент: ${fileInfo.bitDepth / 8}`);
+                }
                 
                 return fileInfo;
             }
-            
+           
             function analyzeGIF(fileInfo, dataView) {
                 const signature = String.fromCharCode(
                     dataView.getUint8(0),
@@ -385,15 +939,15 @@
                 fileInfo.resolution = 'Не указано';
                 fileInfo.compression = 'LZW';
                 fileInfo.format = 'GIF';
-
+    
                 fileInfo.additionalInfo = [];
-
+    
                 if (globalColorTableFlag) {
                     const colorTableSize = 1 << ((packedFields & 0x07) + 1);
                     fileInfo.colorCount = colorTableSize;
                     fileInfo.additionalInfo.push(`Цветов в палитре: ${colorTableSize}`);
                 }
-
+    
                 const version = String.fromCharCode(
                     dataView.getUint8(3),
                     dataView.getUint8(4),
@@ -402,7 +956,7 @@
                 fileInfo.additionalInfo.push(`Версия: GIF${version}`);
                 
                 const backgroundColorIndex = dataView.getUint8(11);
-                fileInfo.additionalInfo.push(`Фонтовый цвет: ${backgroundColorIndex}`);
+                fileInfo.additionalInfo.push(`Фоновый цвет: ${backgroundColorIndex}`);
                 
                 const pixelAspectRatio = dataView.getUint8(12);
                 if (pixelAspectRatio !== 0) {
@@ -518,7 +1072,9 @@
                 const yPixelsPerMeter = dataView.getInt32(42, true);
                 
                 if (xPixelsPerMeter > 0 && yPixelsPerMeter > 0) {
-                    fileInfo.resolution = `${Math.round(xPixelsPerMeter * 0.0254)} x ${Math.round(yPixelsPerMeter * 0.0254)} DPI`;
+                    const xDPI = Math.round(xPixelsPerMeter * 0.0254);
+                    const yDPI = Math.round(yPixelsPerMeter * 0.0254);
+                    fileInfo.resolution = `${xDPI} x ${yDPI} DPI`;
                 } else {
                     fileInfo.resolution = 'Не указано';
                 }
@@ -535,24 +1091,24 @@
                 
                 fileInfo.compression = compressionTypes[compression] || 'Неизвестно';
                 fileInfo.format = 'BMP';
-
+    
                 fileInfo.additionalInfo = [];
- 
+     
                 const imageSize = dataView.getUint32(34, true);
                 if (imageSize > 0) {
                     fileInfo.additionalInfo.push(`Размер данных: ${imageSize} байт`);
                 }
- 
+     
                 const colorsUsed = dataView.getUint32(46, true);
                 if (colorsUsed > 0) {
                     fileInfo.additionalInfo.push(`Цветов в палитре: ${colorsUsed}`);
                 }
-
+    
                 const importantColors = dataView.getUint32(50, true);
                 if (importantColors > 0) {
                     fileInfo.additionalInfo.push(`Важных цветов: ${importantColors}`);
                 }
-
+    
                 const pixelOffset = dataView.getUint32(10, true);
                 fileInfo.additionalInfo.push(`Смещение данных: ${pixelOffset} байт`);
                 
@@ -611,7 +1167,7 @@
                                 const resolutionUnit = getTiffValue(dataView, entryOffset, littleEndian);
                                 if (fileInfo.xResolution && fileInfo.yResolution) {
                                     if (resolutionUnit === 2) {
-                                        fileInfo.resolution = `${fileInfo.xResolution} x ${fileInfo.yResolution} DPI`;
+                                        fileInfo.resolution = `${Math.round(fileInfo.xResolution)} x ${Math.round(fileInfo.yResolution)} DPI`;
                                     } else if (resolutionUnit === 3) {
                                         fileInfo.resolution = `${Math.round(fileInfo.xResolution * 2.54)} x ${Math.round(fileInfo.yResolution * 2.54)} DPI`;
                                     } else {
@@ -620,7 +1176,7 @@
                                 }
                                 break;
                         }
-
+    
                         fileInfo.tiffTags.push({
                             tag: tag,
                             name: getTiffTagName(tag),
@@ -783,72 +1339,103 @@
                             <tr>
                                 <th>Имя файла</th>
                                 <th>Размер (пиксели)</th>
-                                <th>Разрешение (DPI)</th>
-                                <th>Глубина цвета (бит)</th>
+                                <th>Разрешение</th>
+                                <th>Глубина цвета</th>
                                 <th>Сжатие</th>
                                 <th>Формат</th>
-                                <th class="details">Дополнительная информация</th>
+                                <th class="details">Детали</th>
                             </tr>
                         </thead>
                         <tbody>
                 `;
                 
-                results.forEach(result => {
+                results.forEach((result, index) => {
                     if (result.error) {
                         tableHTML += `
                             <tr>
-                                <td>${result.name}</td>
+                                <td><strong>${result.name}</strong></td>
                                 <td colspan="6" class="error">${result.error}</td>
                             </tr>
                         `;
                     } else {
-                        let additionalInfo = 'Нет дополнительной информации';
+                        let additionalInfo = '<div style="color: var(--text-light); font-size: 13px;">';
                         
                         if (result.additionalInfo && result.additionalInfo.length > 0) {
-                            additionalInfo = result.additionalInfo.join('<br>');
+                            additionalInfo += result.additionalInfo.join('<br>');
                         }
                         
                         if (result.format === 'JPEG' && result.quantizationTables) {
                             if (result.quantizationTables.length > 0) {
-                                additionalInfo += `<div class="quantization-table">`;
+                                additionalInfo += `<div id="quantization-preview-${index}" class="quantization-table">`;
                                 result.quantizationTables.forEach(table => {
-                                    additionalInfo += `Таблица ${table.id}: [${table.values.join(', ')}]<br>`;
+                                    additionalInfo += `<strong>Таблица ${table.id}:</strong> [${table.values.slice(0, 8).join(', ')}...]<br>`;
+                                });
+                                additionalInfo += `<span class="show-more" onclick="showFullQuantizationTable(${index})">Показать полностью</span>`;
+                                additionalInfo += `</div>`;
+                                
+                                additionalInfo += `<div id="quantization-full-${index}" class="full-quantization-table" style="display: none;">`;
+                                result.quantizationTables.forEach(table => {
+                                    additionalInfo += `<strong>Таблица ${table.id} (полностью):</strong><br>`;
+                                    for (let i = 0; i < 8; i++) {
+                                        const row = table.values.slice(i * 8, i * 8 + 8);
+                                        additionalInfo += row.map(v => v.toString().padStart(4)).join(' ') + '<br>';
+                                    }
+                                    additionalInfo += `<span class="show-more" onclick="hideFullQuantizationTable(${index})">Скрыть</span><br><br>`;
                                 });
                                 additionalInfo += `</div>`;
                             }
                         }
                         
                         if (result.format === 'GIF' && result.colorCount) {
-                            additionalInfo += `<br><span class="tooltip">Цветов: ${result.colorCount}
+                            additionalInfo += `<br><span class="tooltip">🎨 ${result.colorCount} цветов
                                 <span class="tooltiptext">Количество цветов в глобальной палитре GIF</span>
                             </span>`;
                         }
                         
                         if (result.format === 'PNG' && result.colorType !== undefined) {
-                            const colorTypes = ['Grayscale', 'RGB', 'Indexed', 'Grayscale+Alpha', 'RGB+Alpha'];
-                            additionalInfo += `<br><span class="tooltip">Тип цвета: ${colorTypes[result.colorType] || 'Неизвестно'}
-                                <span class="tooltiptext">Определяет цветовое пространство PNG изображения</span>
+                            const colorTypes = {
+                                0: 'Grayscale',
+                                2: 'RGB',
+                                3: 'Indexed',
+                                4: 'Grayscale+Alpha',
+                                6: 'RGB+Alpha'
+                            };
+                            const colorTypeName = colorTypes[result.colorType] || 'Неизвестно';
+                            additionalInfo += `<br><span class="tooltip">🌈 ${colorTypeName}
+                                <span class="tooltiptext">Цветовое пространство PNG изображения: ${colorTypeName}</span>
                             </span>`;
                         }
                         
-                        if (result.format === 'BMP' && result.additionalInfo) {
-                            additionalInfo = result.additionalInfo.join('<br>');
-                        }
-                        
                         if (result.format === 'TIFF' && result.photometric) {
-                            additionalInfo += `<br><span class="tooltip">Фотометрика: ${result.photometric}
+                            additionalInfo += `<br><span class="tooltip">📊 ${result.photometric}
                                 <span class="tooltiptext">Определяет цветовое пространство TIFF изображения</span>
                             </span>`;
                         }
                         
+                        additionalInfo += '</div>';
+                        
+                        const formatBadge = `<span class="format-badge">${result.format}</span>`;
+                        const resolutionBadge = result.resolution !== 'Не указано' ? 
+                            `<span class="resolution-badge">${result.resolution}</span>` : 
+                            '<span style="color: var(--text-light);">Не указано</span>';
+                        
                         tableHTML += `
                             <tr>
-                                <td>${result.name}</td>
-                                <td>${result.width || 'N/A'} x ${result.height || 'N/A'}</td>
-                                <td>${result.resolution || 'N/A'}</td>
-                                <td>${result.bitDepth || 'N/A'}</td>
-                                <td>${result.compression || 'N/A'}</td>
-                                <td>${result.format || 'N/A'}</td>
+                                <td>
+                                    <div style="font-weight: 600; margin-bottom: 4px;">${result.name}</div>
+                                    <div style="font-size: 12px; color: var(--text-light);">
+                                        ${(result.size / 1024).toFixed(1)} КБ • ${result.extension.toUpperCase()}
+                                    </div>
+                                </td>
+                                <td>
+                                    <div style="font-weight: 600;">${result.width || '—'} × ${result.height || '—'}</div>
+                                </td>
+                                <td>${resolutionBadge}</td>
+                                <td>
+                                    <div style="font-weight: 600; color: var(--primary);">${result.bitDepth || '—'} бит</div>
+                                </td>
+                                <td>${result.compression || '—'}</td>
+                                <td>${formatBadge}</td>
                                 <td class="details">${additionalInfo}</td>
                             </tr>
                         `;
@@ -862,6 +1449,31 @@
                 
                 resultsDiv.innerHTML = tableHTML;
             }
+            
+            function updateStats(total, success, error, avg) {
+                totalFiles.textContent = total;
+                successFiles.textContent = success;
+                errorFiles.textContent = error;
+                avgSize.textContent = avg;
+            }
+            
+            window.showFullQuantizationTable = function(index) {
+                const preview = document.getElementById(`quantization-preview-${index}`);
+                const full = document.getElementById(`quantization-full-${index}`);
+                if (preview && full) {
+                    preview.style.display = 'none';
+                    full.style.display = 'block';
+                }
+            };
+            
+            window.hideFullQuantizationTable = function(index) {
+                const preview = document.getElementById(`quantization-preview-${index}`);
+                const full = document.getElementById(`quantization-full-${index}`);
+                if (preview && full) {
+                    preview.style.display = 'block';
+                    full.style.display = 'none';
+                }
+            };
         });
     </script>
 </body>
