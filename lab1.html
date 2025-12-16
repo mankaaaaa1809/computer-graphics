@@ -6,172 +6,330 @@
     <title>Цветовые модели</title>
     <style>
         :root {
-            --primary-color: #4a6fa5;
-            --secondary-color: #166088;
-            --background-color: #f5f7fa;
-            --card-color: #ffffff;
-            --text-color: #333333;
-            --border-color: #dddddd;
-            --warning-color: #ff9800;
-            --error-color: #f44336;
+            --primary: #6366f1;
+            --primary-dark: #4f46e5;
+            --secondary: #0ea5e9;
+            --background: #f8fafc;
+            --card: #ffffff;
+            --text: #1e293b;
+            --text-light: #64748b;
+            --border: #e2e8f0;
+            --shadow: rgba(0, 0, 0, 0.08);
+            --success: #10b981;
+            --warning: #f59e0b;
+            --error: #ef4444;
+            --radius-lg: 16px;
+            --radius-md: 12px;
+            --radius-sm: 8px;
+            --transition: all 0.25s ease;
         }
         
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
             line-height: 1.6;
-            color: var(--text-color);
-            background-color: var(--background-color);
+            color: var(--text);
+            background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
             margin: 0;
-            padding: 20px;
+            padding: 24px;
+            min-height: 100vh;
         }
         
         .container {
-            max-width: 1200px;
+            max-width: 1400px;
             margin: 0 auto;
             display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 20px;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 24px;
+        }
+        
+        @media (max-width: 1200px) {
+            .container {
+                grid-template-columns: repeat(2, 1fr);
+            }
         }
         
         @media (max-width: 768px) {
             .container {
                 grid-template-columns: 1fr;
+                gap: 20px;
             }
         }
         
         header {
             grid-column: 1 / -1;
             text-align: center;
-            margin-bottom: 30px;
+            margin-bottom: 40px;
+            padding-top: 20px;
         }
         
         h1 {
-            color: var(--secondary-color);
-            margin-bottom: 10px;
+            color: var(--text);
+            margin: 0 0 12px 0;
+            font-size: 42px;
+            font-weight: 800;
+            background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            letter-spacing: -0.5px;
+        }
+        
+        .subtitle {
+            color: var(--text-light);
+            font-size: 18px;
+            font-weight: 500;
+            margin: 0;
         }
         
         .color-preview {
             grid-column: 1 / -1;
-            height: 100px;
-            border-radius: 8px;
-            margin-bottom: 20px;
-            border: 2px solid var(--border-color);
+            height: 140px;
+            border-radius: var(--radius-lg);
+            margin-bottom: 32px;
+            border: 3px solid var(--border);
             display: flex;
             align-items: center;
             justify-content: center;
-            font-weight: bold;
-            font-size: 18px;
-            transition: background-color 0.3s;
+            font-weight: 700;
+            font-size: 20px;
+            transition: var(--transition);
+            box-shadow: 0 8px 32px var(--shadow);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .color-preview::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 6px;
+            background: linear-gradient(90deg, var(--primary), var(--secondary));
         }
         
         .color-model {
-            background-color: var(--card-color);
-            border-radius: 8px;
-            padding: 20px;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            background: var(--card);
+            border-radius: var(--radius-lg);
+            padding: 28px;
+            box-shadow: 0 4px 24px var(--shadow);
+            border: 1px solid var(--border);
+            transition: var(--transition);
+        }
+        
+        .color-model:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 12px 32px rgba(0, 0, 0, 0.12);
         }
         
         h2 {
-            color: var(--primary-color);
-            border-bottom: 1px solid var(--border-color);
-            padding-bottom: 10px;
-            margin-top: 0;
+            color: var(--text);
+            border-bottom: 2px solid var(--border);
+            padding-bottom: 16px;
+            margin: 0 0 24px 0;
+            font-size: 24px;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        
+        h2::before {
+            content: '';
+            width: 8px;
+            height: 32px;
+            background: linear-gradient(180deg, var(--primary) 0%, var(--secondary) 100%);
+            border-radius: 4px;
         }
         
         .color-input {
-            margin-bottom: 15px;
+            margin-bottom: 20px;
         }
         
-        label {
-            display: block;
-            margin-bottom: 5px;
-            font-weight: 500;
+        .color-input:last-child {
+            margin-bottom: 0;
+        }
+        
+        .color-input label {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+            font-weight: 600;
+            color: var(--text);
+            font-size: 15px;
+        }
+        
+        .color-value {
+            font-weight: 700;
+            color: var(--primary-dark);
+            font-size: 16px;
+            min-width: 40px;
+            text-align: right;
         }
         
         input[type="range"] {
             width: 100%;
-            margin-bottom: 5px;
+            height: 10px;
+            margin-bottom: 8px;
+            -webkit-appearance: none;
+            background: var(--border);
+            border-radius: 10px;
+            outline: none;
+        }
+        
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 24px;
+            height: 24px;
+            background: var(--primary);
+            border-radius: 50%;
+            cursor: pointer;
+            box-shadow: 0 4px 8px rgba(99, 102, 241, 0.3);
+            border: 3px solid white;
+            transition: var(--transition);
+        }
+        
+        input[type="range"]::-webkit-slider-thumb:hover {
+            transform: scale(1.1);
+            box-shadow: 0 6px 12px rgba(99, 102, 241, 0.4);
         }
         
         .input-group {
             display: flex;
-            gap: 10px;
+            gap: 12px;
+            align-items: center;
         }
         
         .input-group input {
             flex: 1;
-            padding: 8px;
-            border: 1px solid var(--border-color);
-            border-radius: 4px;
+            padding: 14px 16px;
+            border: 2px solid var(--border);
+            border-radius: var(--radius-sm);
+            font-size: 16px;
+            font-weight: 500;
+            color: var(--text);
+            transition: var(--transition);
+            background: var(--background);
         }
         
-        .warning {
-            color: var(--warning-color);
-            font-size: 14px;
-            margin-top: 5px;
+        .input-group input:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+        }
+        
+        .input-group input::placeholder {
+            color: var(--text-light);
+        }
+        
+        .range-warning {
             display: none;
+            background: linear-gradient(135deg, rgba(245, 158, 11, 0.1) 0%, rgba(245, 158, 11, 0.05) 100%);
+            padding: 16px;
+            border-radius: var(--radius-sm);
+            margin-top: 16px;
+            font-size: 14px;
+            color: var(--text);
+            border-left: 4px solid var(--warning);
+            animation: slideIn 0.3s ease;
         }
         
         .error {
-            color: var(--error-color);
-            font-size: 14px;
-            margin-top: 5px;
             display: none;
-            background-color: rgba(244, 67, 54, 0.1);
-            padding: 8px;
-            border-radius: 4px;
-            border-left: 3px solid var(--error-color);
+            background: linear-gradient(135deg, rgba(239, 68, 68, 0.1) 0%, rgba(239, 68, 68, 0.05) 100%);
+            padding: 16px;
+            border-radius: var(--radius-sm);
+            margin-top: 16px;
+            font-size: 14px;
+            color: var(--text);
+            border-left: 4px solid var(--error);
+            animation: slideIn 0.3s ease;
         }
         
         .color-picker-container {
             grid-column: 1 / -1;
-            background-color: var(--card-color);
-            border-radius: 8px;
-            padding: 20px;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            background: var(--card);
+            border-radius: var(--radius-lg);
+            padding: 32px;
+            box-shadow: 0 4px 24px var(--shadow);
+            border: 1px solid var(--border);
             display: flex;
             align-items: center;
             justify-content: space-between;
+            margin-top: 8px;
         }
         
         .color-picker-label {
-            font-size: 18px;
-            font-weight: 600;
-            color: var(--primary-color);
+            font-size: 20px;
+            font-weight: 700;
+            color: var(--text);
+        }
+        
+        .color-picker-wrapper {
+            display: flex;
+            align-items: center;
+            gap: 20px;
         }
         
         #colorPicker {
-            width: 60px;
-            height: 60px;
+            width: 80px;
+            height: 80px;
             border: none;
             cursor: pointer;
-            border-radius: 8px;
-            border: 2px solid var(--border-color);
+            border-radius: var(--radius-md);
+            border: 3px solid var(--border);
+            padding: 0;
+            transition: var(--transition);
+        }
+        
+        #colorPicker:hover {
+            transform: scale(1.05);
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
         }
         
         footer {
             grid-column: 1 / -1;
             text-align: center;
-            margin-top: 30px;
-            font-size: 14px;
-            color: #777;
+            margin-top: 48px;
+            font-size: 15px;
+            color: var(--text-light);
+            padding: 24px 0;
+            border-top: 1px solid var(--border);
         }
-
-        .range-warning {
-            display: none;
-            background-color: rgba(255, 152, 0, 0.1);
-            padding: 8px;
-            border-radius: 4px;
-            border-left: 3px solid var(--warning-color);
-            margin-top: 10px;
-            font-size: 14px;
+        
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateX(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
         }
+        
+        .model-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: var(--radius-sm);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 16px;
+            font-weight: 700;
+            color: white;
+        }
+        
+        .rgb-icon { background: linear-gradient(135deg, #ef4444 0%, #f97316 50%, #3b82f6 100%); }
+        .cmyk-icon { background: linear-gradient(135deg, #06b6d4 0%, #8b5cf6 33%, #ec4899 66%, #000000 100%); }
+        .hsv-icon { background: linear-gradient(135deg, #f59e0b 0%, #84cc16 50%, #10b981 100%); }
     </style>
 </head>
 <body>
     <div class="container">
         <header>
             <h1>Цветовые модели</h1>
+            <p class="subtitle">Интерактивный конвертер цветов в реальном времени</p>
         </header>
         
         <div class="color-preview" id="colorPreview">
@@ -179,26 +337,36 @@
         </div>
         
         <div class="color-model">
+            <div class="model-icon rgb-icon">RGB</div>
             <h2>RGB</h2>
             <div class="color-input">
-                <label for="rSlider">Красный (R): <span id="rValue">0</span></label>
+                <label for="rSlider">
+                    Красный (R)
+                    <span class="color-value" id="rValue">128</span>
+                </label>
                 <input type="range" id="rSlider" min="0" max="255" value="128">
                 <div class="input-group">
-                    <input type="number" id="rInput" min="0" max="255" value="128">
+                    <input type="number" id="rInput" min="0" max="255" value="128" placeholder="0-255">
                 </div>
             </div>
             <div class="color-input">
-                <label for="gSlider">Зеленый (G): <span id="gValue">0</span></label>
+                <label for="gSlider">
+                    Зеленый (G)
+                    <span class="color-value" id="gValue">128</span>
+                </label>
                 <input type="range" id="gSlider" min="0" max="255" value="128">
                 <div class="input-group">
-                    <input type="number" id="gInput" min="0" max="255" value="128">
+                    <input type="number" id="gInput" min="0" max="255" value="128" placeholder="0-255">
                 </div>
             </div>
             <div class="color-input">
-                <label for="bSlider">Синий (B): <span id="bValue">0</span></label>
+                <label for="bSlider">
+                    Синий (B)
+                    <span class="color-value" id="bValue">128</span>
+                </label>
                 <input type="range" id="bSlider" min="0" max="255" value="128">
                 <div class="input-group">
-                    <input type="number" id="bInput" min="0" max="255" value="128">
+                    <input type="number" id="bInput" min="0" max="255" value="128" placeholder="0-255">
                 </div>
             </div>
             <div class="range-warning" id="rgbRangeWarning">Значение было скорректировано для соответствия диапазону 0-255</div>
@@ -206,33 +374,46 @@
         </div>
         
         <div class="color-model">
+            <div class="model-icon cmyk-icon">CMYK</div>
             <h2>CMYK</h2>
             <div class="color-input">
-                <label for="cSlider">Голубой (C): <span id="cValue">0</span>%</label>
+                <label for="cSlider">
+                    Голубой (C)
+                    <span class="color-value" id="cValue">0</span>%
+                </label>
                 <input type="range" id="cSlider" min="0" max="100" value="0">
                 <div class="input-group">
-                    <input type="number" id="cInput" min="0" max="100" value="0">
+                    <input type="number" id="cInput" min="0" max="100" value="0" placeholder="0-100%">
                 </div>
             </div>
             <div class="color-input">
-                <label for="mSlider">Пурпурный (M): <span id="mValue">0</span>%</label>
+                <label for="mSlider">
+                    Пурпурный (M)
+                    <span class="color-value" id="mValue">0</span>%
+                </label>
                 <input type="range" id="mSlider" min="0" max="100" value="0">
                 <div class="input-group">
-                    <input type="number" id="mInput" min="0" max="100" value="0">
+                    <input type="number" id="mInput" min="0" max="100" value="0" placeholder="0-100%">
                 </div>
             </div>
             <div class="color-input">
-                <label for="ySlider">Желтый (Y): <span id="yValue">0</span>%</label>
+                <label for="ySlider">
+                    Желтый (Y)
+                    <span class="color-value" id="yValue">0</span>%
+                </label>
                 <input type="range" id="ySlider" min="0" max="100" value="0">
                 <div class="input-group">
-                    <input type="number" id="yInput" min="0" max="100" value="0">
+                    <input type="number" id="yInput" min="0" max="100" value="0" placeholder="0-100%">
                 </div>
             </div>
             <div class="color-input">
-                <label for="kSlider">Черный (K): <span id="kValue">0</span>%</label>
+                <label for="kSlider">
+                    Черный (K)
+                    <span class="color-value" id="kValue">0</span>%
+                </label>
                 <input type="range" id="kSlider" min="0" max="100" value="0">
                 <div class="input-group">
-                    <input type="number" id="kInput" min="0" max="100" value="0">
+                    <input type="number" id="kInput" min="0" max="100" value="0" placeholder="0-100%">
                 </div>
             </div>
             <div class="range-warning" id="cmykRangeWarning">Значение было скорректировано для соответствия диапазону 0-100%</div>
@@ -240,26 +421,36 @@
         </div>
         
         <div class="color-model">
+            <div class="model-icon hsv-icon">HSV</div>
             <h2>HSV</h2>
             <div class="color-input">
-                <label for="hSlider">Оттенок (H): <span id="hValue">0</span>°</label>
+                <label for="hSlider">
+                    Оттенок (H)
+                    <span class="color-value" id="hValue">0</span>°
+                </label>
                 <input type="range" id="hSlider" min="0" max="360" value="0">
                 <div class="input-group">
-                    <input type="number" id="hInput" min="0" max="360" value="0">
+                    <input type="number" id="hInput" min="0" max="360" value="0" placeholder="0-360°">
                 </div>
             </div>
             <div class="color-input">
-                <label for="sSlider">Насыщенность (S): <span id="sValue">0</span>%</label>
+                <label for="sSlider">
+                    Насыщенность (S)
+                    <span class="color-value" id="sValue">0</span>%
+                </label>
                 <input type="range" id="sSlider" min="0" max="100" value="0">
                 <div class="input-group">
-                    <input type="number" id="sInput" min="0" max="100" value="0">
+                    <input type="number" id="sInput" min="0" max="100" value="0" placeholder="0-100%">
                 </div>
             </div>
             <div class="color-input">
-                <label for="vSlider">Яркость (V): <span id="vValue">0</span>%</label>
+                <label for="vSlider">
+                    Яркость (V)
+                    <span class="color-value" id="vValue">0</span>%
+                </label>
                 <input type="range" id="vSlider" min="0" max="100" value="0">
                 <div class="input-group">
-                    <input type="number" id="vInput" min="0" max="100" value="0">
+                    <input type="number" id="vInput" min="0" max="100" value="0" placeholder="0-100%">
                 </div>
             </div>
             <div class="range-warning" id="hsvRangeWarning">Значение было скорректировано для соответствия допустимому диапазону</div>
@@ -268,7 +459,9 @@
         
         <div class="color-picker-container">
             <div class="color-picker-label">Выбор цвета из палитры</div>
-            <input type="color" id="colorPicker" value="#808080">
+            <div class="color-picker-wrapper">
+                <input type="color" id="colorPicker" value="#808080">
+            </div>
         </div>
         
         <footer>
@@ -585,22 +778,26 @@
             };
         }
         
-        function cmykToRgb(c, m, y, k) {
-            c = c / 100;
-            m = m / 100;
-            y = y / 100;
-            k = k / 100;
-            
-            const r = 255 * (1 - c) * (1 - k);
-            const g = 255 * (1 - m) * (1 - k);
-            const b = 255 * (1 - y) * (1 - k);
-            
-            return {
-                r: Math.round(r),
-                g: Math.round(g),
-                b: Math.round(b)
-            };
-        }
+        function cmykToRgbDirect(c, m, y, k) {
+    c = c / 100;
+    m = m / 100;
+    y = y / 100;
+    k = k / 100;
+    
+    const r = Math.round(255 * (1 - Math.min(1, c * (1 - k) + k)));
+    const g = Math.round(255 * (1 - Math.min(1, m * (1 - k) + k)));
+    const b = Math.round(255 * (1 - Math.min(1, y * (1 - k) + k)));
+    
+    return {
+        r: Math.max(0, Math.min(255, r)),
+        g: Math.max(0, Math.min(255, g)),
+        b: Math.max(0, Math.min(255, b))
+    };
+}
+
+function cmykToRgb(c, m, y, k) {
+    return cmykToRgbDirect(c, m, y, k);
+}
         
         function updateCMYKFromRGB() {
             const { r, g, b } = currentColor;
@@ -666,40 +863,82 @@
             currentColor = rgb;
             updateRGBValues();
         }
+
+        function rgbToHsvPrecise(r, g, b) {
+    r = r / 255;
+    g = g / 255;
+    b = b / 255;
+    
+    const max = Math.max(r, g, b);
+    const min = Math.min(r, g, b);
+    const delta = max - min;
+    
+    let h = 0;
+    let s = 0;
+    const v = max;
+    
+    if (delta !== 0) {
+        s = delta / max;
         
-        function rgbToHsv(r, g, b) {
-            r = r / 255;
-            g = g / 255;
-            b = b / 255;
-            
-            const max = Math.max(r, g, b);
-            const min = Math.min(r, g, b);
-            const delta = max - min;
-            
-            let h = 0;
-            let s = 0;
-            let v = max;
-            
-            if (delta !== 0) {
-                s = delta / max;
-                
-                if (max === r) {
-                    h = (g - b) / delta + (g < b ? 6 : 0);
-                } else if (max === g) {
-                    h = (b - r) / delta + 2;
-                } else {
-                    h = (r - g) / delta + 4;
-                }
-                
-                h /= 6;
-            }
-            
-            return {
-                h: Math.round(h * 360),
-                s: Math.round(s * 100),
-                v: Math.round(v * 100)
-            };
+        if (max === r) {
+            h = (g - b) / delta;
+            if (g < b) h += 6;
+        } else if (max === g) {
+            h = 2 + (b - r) / delta;
+        } else {
+            h = 4 + (r - g) / delta;
         }
+        
+        h *= 60;
+        if (h < 0) h += 360;
+    }
+    
+    return {
+        h: Math.floor(h),
+        s: Math.round(s * 100),
+        v: Math.round(v * 100)
+    };
+}
+        
+function rgbToHsv(r, g, b) {
+    r = r / 255;
+    g = g / 255;
+    b = b / 255;
+    
+    const max = Math.max(r, g, b);
+    const min = Math.min(r, g, b);
+    const delta = max - min;
+    
+    let h = 0;
+    let s = 0;
+    const v = max;
+    
+    if (delta !== 0) {
+        s = delta / max;
+        
+        if (max === r) {
+            h = (g - b) / delta;
+            if (g < b) h += 6;
+        } else if (max === g) {
+            h = 2 + (b - r) / delta;
+        } else {
+            h = 4 + (r - g) / delta;
+        }
+        
+        h *= 60;
+        if (h < 0) h += 360;
+        
+        if (Math.abs(h - 270) < 0.0001) {
+            h = 270;
+        }
+    }
+    
+    return {
+        h: Math.floor(h),
+        s: Math.round(s * 100),
+        v: Math.round(v * 100)
+    };
+}
         
         function hsvToRgb(h, s, v) {
             h = h / 360;
@@ -775,15 +1014,34 @@
             vValue.textContent = v;
         }
         
-        function updateRGBFromHSV() {
-            const h = parseInt(hSlider.value);
-            const s = parseInt(sSlider.value);
-            const v = parseInt(vSlider.value);
-            
-            const rgb = hsvToRgb(h, s, v);
-            currentColor = rgb;
-            updateRGBValues();
-        }
+function updateRGBFromCMYK() {
+    const c = parseInt(cSlider.value);
+    const m = parseInt(mSlider.value);
+    const y = parseInt(ySlider.value);
+    const k = parseInt(kSlider.value);
+    
+    const rgb = cmykToRgb(c, m, y, k);
+    
+    currentColor.r = rgb.r;
+    currentColor.g = rgb.g;
+    currentColor.b = rgb.b;
+    
+    updateRGBValues();
+}
+
+function updateRGBValues() {
+    rSlider.value = Math.round(currentColor.r);
+    gSlider.value = Math.round(currentColor.g);
+    bSlider.value = Math.round(currentColor.b);
+    
+    rInput.value = Math.round(currentColor.r);
+    gInput.value = Math.round(currentColor.g);
+    bInput.value = Math.round(currentColor.b);
+    
+    rValue.textContent = Math.round(currentColor.r);
+    gValue.textContent = Math.round(currentColor.g);
+    bValue.textContent = Math.round(currentColor.b);
+}
         
         function rgbToHex(r, g, b) {
             return "#" + ((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1);
