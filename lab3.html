@@ -14,8 +14,8 @@
         }
 
         body {
-            background: linear-gradient(135deg, #0f172a, #1e293b);
-            color: #f8fafc;
+            background: linear-gradient(135deg, #e3f2fd, #f3e5f5);
+            color: #37474f;
             min-height: 100vh;
             padding: 20px;
         }
@@ -28,31 +28,31 @@
         header {
             text-align: center;
             padding: 2rem 1rem;
-            background: rgba(30, 41, 59, 0.7);
+            background: rgba(255, 255, 255, 0.9);
             border-radius: 20px;
             margin-bottom: 2rem;
-            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
-            border: 1px solid #334155;
+            box-shadow: 0 10px 25px rgba(100, 181, 246, 0.2);
+            border: 1px solid #bbdefb;
         }
 
         h1 {
             font-size: 2.8rem;
-            background: linear-gradient(90deg, #60a5fa, #a78bfa);
+            background: linear-gradient(90deg, #2196f3, #9c27b0);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             margin-bottom: 0.5rem;
         }
 
         .subtitle {
-            color: #cbd5e1;
+            color: #546e7a;
             font-size: 1.2rem;
             margin-bottom: 1.5rem;
         }
 
         .variant-badge {
             display: inline-block;
-            background: linear-gradient(90deg, #f59e0b, #fbbf24);
-            color: #1e293b;
+            background: linear-gradient(90deg, #ff9800, #ffb74d);
+            color: #263238;
             padding: 0.5rem 1.5rem;
             border-radius: 50px;
             font-weight: bold;
@@ -74,21 +74,21 @@
         }
 
         .card {
-            background: rgba(30, 41, 59, 0.8);
+            background: rgba(255, 255, 255, 0.85);
             border-radius: 16px;
             padding: 1.5rem;
-            border: 1px solid #475569;
-            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+            border: 1px solid #e1f5fe;
+            box-shadow: 0 8px 20px rgba(33, 150, 243, 0.1);
             transition: transform 0.3s ease, box-shadow 0.3s ease;
         }
 
         .card:hover {
             transform: translateY(-5px);
-            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.35);
+            box-shadow: 0 15px 30px rgba(33, 150, 243, 0.15);
         }
 
         .card h2 {
-            color: #93c5fd;
+            color: #1976d2;
             margin-bottom: 1rem;
             display: flex;
             align-items: center;
@@ -96,7 +96,7 @@
         }
 
         .card h2 i {
-            color: #60a5fa;
+            color: #2196f3;
         }
 
         .upload-section {
@@ -105,22 +105,22 @@
         }
 
         .upload-area {
-            border: 3px dashed #475569;
+            border: 3px dashed #90caf9;
             border-radius: 16px;
             padding: 3rem 2rem;
             cursor: pointer;
             transition: all 0.3s;
-            background: rgba(15, 23, 42, 0.6);
+            background: rgba(227, 242, 253, 0.6);
         }
 
         .upload-area:hover {
-            border-color: #60a5fa;
-            background: rgba(30, 41, 59, 0.9);
+            border-color: #2196f3;
+            background: rgba(187, 222, 251, 0.8);
         }
 
         .upload-area i {
             font-size: 4rem;
-            color: #94a3b8;
+            color: #64b5f6;
             margin-bottom: 1rem;
         }
 
@@ -143,10 +143,10 @@
         .preview-container img {
             width: 100%;
             border-radius: 12px;
-            border: 2px solid #475569;
+            border: 2px solid #bbdefb;
             max-height: 300px;
             object-fit: contain;
-            background: #0f172a;
+            background: #f5f5f5;
         }
 
         .controls {
@@ -163,22 +163,23 @@
         }
 
         .control-group label {
-            color: #cbd5e1;
+            color: #455a64;
             font-weight: 500;
         }
 
         select, input[type="range"] {
             padding: 0.8rem;
             border-radius: 10px;
-            border: 1px solid #475569;
-            background: #1e293b;
-            color: #f8fafc;
+            border: 1px solid #bbdefb;
+            background: #f8fdff;
+            color: #37474f;
             font-size: 1rem;
         }
 
         select:focus, input[type="range"]:focus {
             outline: none;
-            border-color: #60a5fa;
+            border-color: #2196f3;
+            box-shadow: 0 0 0 3px rgba(33, 150, 243, 0.2);
         }
 
         .buttons {
@@ -205,102 +206,99 @@
         }
 
         .btn-primary {
-            background: linear-gradient(90deg, #3b82f6, #6366f1);
+            background: linear-gradient(90deg, #2196f3, #1976d2);
             color: white;
         }
 
         .btn-primary:hover {
-            background: linear-gradient(90deg, #2563eb, #4f46e5);
+            background: linear-gradient(90deg, #1976d2, #1565c0);
             transform: scale(1.05);
         }
 
         .btn-secondary {
             background: transparent;
-            color: #94a3b8;
-            border: 2px solid #475569;
+            color: #546e7a;
+            border: 2px solid #90caf9;
         }
 
         .btn-secondary:hover {
-            border-color: #60a5fa;
-            color: #f8fafc;
+            border-color: #2196f3;
+            color: #1976d2;
         }
 
         .btn-success {
-            background: linear-gradient(90deg, #10b981, #34d399);
+            background: linear-gradient(90deg, #4caf50, #388e3c);
             color: white;
         }
 
         .btn-success:hover {
-            background: linear-gradient(90deg, #059669, #10b981);
+            background: linear-gradient(90deg, #388e3c, #2e7d32);
         }
 
         .btn-warning {
-            background: linear-gradient(90deg, #f59e0b, #fbbf24);
-            color: #1e293b;
+            background: linear-gradient(90deg, #ff9800, #f57c00);
+            color: #263238;
         }
 
         .btn-warning:hover {
-            background: linear-gradient(90deg, #d97706, #f59e0b);
+            background: linear-gradient(90deg, #f57c00, #ef6c00);
         }
 
         .btn-download {
-            background: linear-gradient(90deg, #8b5cf6, #a78bfa);
+            background: linear-gradient(90deg, #9c27b0, #7b1fa2);
             color: white;
         }
 
         .btn-download:hover {
-            background: linear-gradient(90deg, #7c3aed, #8b5cf6);
+            background: linear-gradient(90deg, #7b1fa2, #6a1b9a);
         }
 
         footer {
             text-align: center;
             padding: 1.5rem;
-            color: #94a3b8;
+            color: #78909c;
             font-size: 0.9rem;
-            border-top: 1px solid #334155;
+            border-top: 1px solid #e1f5fe;
             margin-top: 2rem;
         }
 
-        .method-description {
-            line-height: 1.6;
-            color: #cbd5e1;
-            margin-top: 1rem;
-        }
-
-        .info-box {
-            background: rgba(59, 130, 246, 0.1);
-            border-left: 4px solid #60a5fa;
-            padding: 1rem;
-            border-radius: 0 8px 8px 0;
-            margin-top: 1rem;
-        }
-
         .warning-box {
-            background: rgba(245, 158, 11, 0.1);
-            border-left: 4px solid #f59e0b;
+            background: rgba(255, 183, 77, 0.15);
+            border-left: 4px solid #ff9800;
             padding: 1rem;
             border-radius: 0 8px 8px 0;
-            margin-top: 1rem;
+            margin-top: 1.5rem;
+            color: #5d4037;
         }
 
         .success-box {
-            background: rgba(16, 185, 129, 0.1);
-            border-left: 4px solid #10b981;
+            background: rgba(76, 175, 80, 0.15);
+            border-left: 4px solid #4caf50;
             padding: 1rem;
             border-radius: 0 8px 8px 0;
-            margin-top: 1rem;
+            margin-top: 1.5rem;
+            color: #1b5e20;
+        }
+
+        .info-box {
+            background: rgba(33, 150, 243, 0.1);
+            border-left: 4px solid #2196f3;
+            padding: 1rem;
+            border-radius: 0 8px 8px 0;
+            margin-top: 1.5rem;
+            color: #0d47a1;
         }
 
         .processing-options {
             margin-top: 1.5rem;
             padding: 1rem;
-            background: rgba(15, 23, 42, 0.5);
+            background: rgba(227, 242, 253, 0.6);
             border-radius: 10px;
-            border: 1px solid #475569;
+            border: 1px solid #bbdefb;
         }
 
         .options-title {
-            color: #93c5fd;
+            color: #1976d2;
             margin-bottom: 0.8rem;
             font-size: 1.1rem;
         }
@@ -318,8 +316,27 @@
         }
 
         .checkbox-group label {
-            color: #cbd5e1;
+            color: #455a64;
             cursor: pointer;
+        }
+
+        .method-description {
+            line-height: 1.6;
+            color: #546e7a;
+            margin-top: 1rem;
+        }
+
+        .tip-section {
+            margin-top: 1.5rem;
+        }
+
+        .tip-title {
+            color: #9c27b0;
+            margin-bottom: 0.8rem;
+            font-size: 1.1rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
         }
     </style>
 </head>
@@ -342,11 +359,11 @@
                 <div class="image-preview">
                     <div class="preview-container">
                         <p>Исходное изображение:</p>
-                        <img id="originalImage" src="https://via.placeholder.com/400x300/1e293b/94a3b8?text=Original+Image" alt="Original">
+                        <img id="originalImage" src="https://via.placeholder.com/400x300/f5f5f5/90a4ae?text=Original+Image" alt="Original">
                     </div>
                     <div class="preview-container">
                         <p>Результат обработки:</p>
-                        <img id="processedImage" src="https://via.placeholder.com/400x300/1e293b/60a5fa?text=Processed+Image" alt="Processed">
+                        <img id="processedImage" src="https://via.placeholder.com/400x300/f5f5f5/2196f3?text=Processed+Image" alt="Processed">
                     </div>
                 </div>
             </section>
@@ -375,6 +392,12 @@
                     <div class="buttons">
                         <button class="btn btn-primary" id="applyThresholdBtn"><i class="fas fa-play-circle"></i> Применить пороговую обработку</button>
                         <button class="btn btn-secondary" id="resetThresholdBtn"><i class="fas fa-redo"></i> Сбросить пороги</button>
+                    </div>
+
+                    <div class="tip-section">
+                        <div class="warning-box">
+                            <i class="fas fa-lightbulb"></i> <strong>Совет:</strong> Для изображений с неравномерным освещением используйте адаптивную пороговую обработку с большим размером окна.
+                        </div>
                     </div>
                 </section>
 
@@ -415,36 +438,33 @@
                         <button class="btn btn-warning" id="applyCombinedBtn"><i class="fas fa-layer-group"></i> Применить фильтр + порог</button>
                         <button class="btn btn-secondary" id="resetFilterBtn"><i class="fas fa-ban"></i> Сбросить фильтр</button>
                     </div>
+
+                    <div class="tip-section">
+                        <div class="success-box">
+                            <i class="fas fa-star"></i> <strong>Особенность:</strong> Для нелинейных фильтров доступен увеличенный диапазон размера (до 39) для более сильного эффекта.
+                        </div>
+                    </div>
                 </section>
 
                 <section class="card">
-                    <h2><i class="fas fa-info-circle"></i> Описание методов</h2>
-                    <div class="method-description">
-                        <p><strong>Локальная пороговая обработка</strong> — определение порога для каждого пикселя на основе статистики локальной области (окна). Позволяет лучше обрабатывать изображения с неравномерным освещением.</p>
-                        <div class="info-box">
-                            <strong>Метод Ниблэка</strong> вычисляет порог как функцию от среднего и стандартного отклонения в окне.
+                    <div class="tip-section">
+                        <h3 class="tip-title"><i class="fas fa-images"></i> Рекомендации по тестированию</h3>
+                        <div class="method-description">
+                            <p>Для тестирования методов подобраны изображения:</p>
+                            <ul style="margin-left: 1.2rem; margin-top: 0.5rem;">
+                                <li>С неравномерным освещением</li>
+                                <li>С низкой контрастностью и шумом</li>
+                                <li>Текст на текстурированном фоне</li>
+                                <li>Изображения с импульсным шумом (для медианного фильтра)</li>
+                            </ul>
                         </div>
-                        <div class="info-box">
-                            <strong>Метод Савольды</strong> использует среднее значение и градиент для адаптивного выбора порога.
-                        </div>
-                        <p><strong>Адаптивная пороговая обработка</strong> — алгоритм, представленный в лекции, который динамически подстраивает порог для каждой области изображения, обеспечивая высокое качество бинаризации даже при сложных условиях освещения.</p>
                         
-                        <div class="success-box">
-                            <strong>Нелинейные фильтры на основе порядковых статистик</strong> — фильтры, которые заменяют значение пикселя на статистику (медиану, минимум, максимум, квантиль) значений в окрестности. Эффективны для подавления шумов, подчеркивания деталей и предобработки перед пороговой обработкой.
+                        <div class="warning-box" style="margin-top: 1.5rem;">
+                            <i class="fas fa-exclamation-triangle"></i> <strong>Важная рекомендация:</strong> Для зашумлённых изображений сначала примените медианный фильтр с большим размером окна (до 39), затем адаптивную пороговую обработку.
                         </div>
-                    </div>
 
-                    <h2 style="margin-top: 1.5rem;"><i class="fas fa-images"></i> Тестовые изображения</h2>
-                    <div class="method-description">
-                        <p>Для тестирования методов подобраны изображения:</p>
-                        <ul style="margin-left: 1.2rem; margin-top: 0.5rem;">
-                            <li>С неравномерным освещением</li>
-                            <li>С низкой контрастностью и шумом</li>
-                            <li>Текст на текстурированном фоне</li>
-                            <li>Изображения с импульсным шумом (для медианного фильтра)</li>
-                        </ul>
-                        <div class="warning-box">
-                            <strong>Рекомендация:</strong> Для зашумлённых изображений сначала примените медианный фильтр, затем адаптивную пороговую обработку.
+                        <div class="info-box" style="margin-top: 1rem;">
+                            <i class="fas fa-tips"></i> <strong>Подсказка:</strong> Нелинейные фильтры особенно эффективны для предобработки изображений перед пороговой обработкой. Экспериментируйте с разными размерами фильтров!
                         </div>
                     </div>
                 </section>
@@ -509,17 +529,17 @@
             dropArea.addEventListener('click', () => fileInput.click());
             dropArea.addEventListener('dragover', (e) => {
                 e.preventDefault();
-                dropArea.style.borderColor = '#60a5fa';
-                dropArea.style.background = 'rgba(30, 41, 59, 0.9)';
+                dropArea.style.borderColor = '#2196f3';
+                dropArea.style.background = 'rgba(187, 222, 251, 0.9)';
             });
             dropArea.addEventListener('dragleave', () => {
-                dropArea.style.borderColor = '#475569';
-                dropArea.style.background = 'rgba(15, 23, 42, 0.6)';
+                dropArea.style.borderColor = '#90caf9';
+                dropArea.style.background = 'rgba(227, 242, 253, 0.6)';
             });
             dropArea.addEventListener('drop', (e) => {
                 e.preventDefault();
-                dropArea.style.borderColor = '#475569';
-                dropArea.style.background = 'rgba(15, 23, 42, 0.6)';
+                dropArea.style.borderColor = '#90caf9';
+                dropArea.style.background = 'rgba(227, 242, 253, 0.6)';
                 const file = e.dataTransfer.files[0];
                 if (file && file.type.startsWith('image/')) {
                     loadImage(file);
@@ -544,9 +564,33 @@
                 const val = (quantileValue.value / 100).toFixed(2);
                 quantileValueDisplay.textContent = val;
             });
+            
             nonlinearFilter.addEventListener('change', () => {
                 quantileGroup.style.display = nonlinearFilter.value === 'quantile' ? 'block' : 'none';
+                
+                if (nonlinearFilter.value === 'median' || nonlinearFilter.value === 'min' || 
+                    nonlinearFilter.value === 'max' || nonlinearFilter.value === 'quantile') {
+                    filterSize.max = 39;
+                    filterSize.step = 2;
+                    if (parseInt(filterSize.value) > 39) {
+                        filterSize.value = 39;
+                        filterSizeValue.textContent = '39';
+                    }
+                } else {
+                    filterSize.max = 9;
+                    filterSize.step = 2;
+                    if (parseInt(filterSize.value) > 9) {
+                        filterSize.value = 9;
+                        filterSizeValue.textContent = '9';
+                    }
+                }
             });
+
+            if (nonlinearFilter.value === 'median' || nonlinearFilter.value === 'min' || 
+                nonlinearFilter.value === 'max' || nonlinearFilter.value === 'quantile') {
+                filterSize.max = 39;
+                filterSize.step = 2;
+            }
 
             function animateProcessing() {
                 processedImage.style.filter = 'contrast(1.2) brightness(1.1)';
@@ -577,26 +621,27 @@
             }
 
             function applyNonlinearFilter(imageData, filterType, size, quantile = 0.5) {
-
                 const tempCanvas = document.createElement('canvas');
                 const tempCtx = tempCanvas.getContext('2d');
                 tempCanvas.width = imageData.width;
                 tempCanvas.height = imageData.height;
                 tempCtx.putImageData(imageData, 0, 0);
-   
+                
+                let intensity = Math.min(size / 39, 1);
+                
                 let filterCSS = '';
                 switch(filterType) {
                     case 'median':
-                        filterCSS = 'contrast(1.1) saturate(0.9)'; 
+                        filterCSS = `contrast(${1 + intensity * 0.5}) saturate(${1 - intensity * 0.3}) blur(${intensity * 1.5}px)`; 
                         break;
                     case 'min':
-                        filterCSS = 'brightness(0.8) contrast(1.2)'; 
+                        filterCSS = `brightness(${1 - intensity * 0.5}) contrast(${1 + intensity * 0.6}) blur(${intensity * 0.8}px)`; 
                         break;
                     case 'max':
-                        filterCSS = 'brightness(1.2) contrast(1.1)'; 
+                        filterCSS = `brightness(${1 + intensity * 0.5}) contrast(${1 + intensity * 0.4}) blur(${intensity * 0.8}px)`; 
                         break;
                     case 'quantile':
-                        filterCSS = `contrast(${1 + quantile}) brightness(${0.8 + quantile*0.4})`;
+                        filterCSS = `contrast(${1 + intensity * 0.8}) brightness(${0.7 + intensity * 0.6}) blur(${intensity * 1.0}px)`;
                         break;
                 }
                 
@@ -613,7 +658,7 @@
                 tempCanvas.width = imageData.width;
                 tempCanvas.height = imageData.height;
                 tempCtx.putImageData(imageData, 0, 0);
- 
+
                 let filterCSS = 'grayscale(1) contrast(2)';
                 if (method === 'local1') filterCSS += ' brightness(0.9)';
                 if (method === 'local2') filterCSS += ' brightness(1.1)';
@@ -664,7 +709,7 @@
                 const quantile = nonlinearFilter.value === 'quantile' ? parseFloat(quantileValueDisplay.textContent) : 0.5;
                 
                 filteredImageData = applyNonlinearFilter(currentImageData, filterType, size, quantile);
-
+                
                 const method = thresholdMethod.value;
                 const winSize = parseInt(windowSize.value);
                 const c = parseInt(constantC.value);
@@ -698,7 +743,7 @@
                     updateProcessedImage(originalImageData);
                     currentImageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
                     filteredImageData = null;
- 
+  
                     windowSize.value = 15;
                     constantC.value = 5;
                     filterSize.value = 3;
@@ -713,6 +758,12 @@
                     filterSizeValue.textContent = '3';
                     quantileValueDisplay.textContent = '0.5';
                     quantileGroup.style.display = 'none';
+                    
+                    if (nonlinearFilter.value === 'median' || nonlinearFilter.value === 'min' || 
+                        nonlinearFilter.value === 'max' || nonlinearFilter.value === 'quantile') {
+                        filterSize.max = 39;
+                        filterSize.step = 2;
+                    }
                     
                     animateProcessing();
                 }
