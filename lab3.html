@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ImageLab — Вариант 15</title>
+    <title>Лабораторная работа №3 — Вариант 15</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         * {
@@ -620,37 +620,138 @@
                 reader.readAsDataURL(file);
             }
 
-            function applyNonlinearFilter(imageData, filterType, size, quantile = 0.5) {
-                const tempCanvas = document.createElement('canvas');
-                const tempCtx = tempCanvas.getContext('2d');
-                tempCanvas.width = imageData.width;
-                tempCanvas.height = imageData.height;
-                tempCtx.putImageData(imageData, 0, 0);
+function applyNonlinearFilter(imageData, filterType, size, quantile = 0.5) {
+    const tempCanvas = document.createElement('canvas');
+    const tempCtx = tempCanvas.getContext('2d');
+    tempCanvas.width = imageData.width;
+    tempCanvas.height = imageData.height;
+    tempCtx.putImageData(imageData, 0, 0);
+
+    if (filterType !== 'quantile') {
+        let intensity = Math.min(size / 39, 1);
+        
+        let filterCSS = '';
+        switch(filterType) {
+            case 'median':
+                filterCSS = `contrast(${1 + intensity * 0.5}) saturate(${1 - intensity * 0.3}) blur(${intensity * 1.5}px)`; 
+                break;
+            case 'min':
+                filterCSS = `brightness(${1 - intensity * 0.5}) contrast(${1 + intensity * 0.6}) blur(${intensity * 0.8}px)`; 
+                break;
+            case 'max':
+                filterCSS = `brightness(${1 + intensity * 0.5}) contrast(${1 + intensity * 0.4}) blur(${intensity * 0.8}px)`; 
+                break;
+        }
+        
+        tempCanvas.style.filter = filterCSS;
+        tempCtx.filter = filterCSS;
+        tempCtx.drawImage(tempCanvas, 0, 0);
+        
+        return tempCtx.getImageData(0, 0, tempCanvas.width, tempCanvas.height);
+    } else {
+
+        if (size > 7) {
+            let intensity = Math.min(size / 39, 1);
+
+            let brightnessAdjust = 0.5 + (quantile - 0.5) * 1.0;
+            let contrastAdjust = 1.0 + Math.abs(quantile - 0.5) * 2.0;
+            
+            let filterCSS = `brightness(${brightnessAdjust}) contrast(${contrastAdjust}) blur(${intensity * 0.3}px)`;
+            tempCanvas.style.filter = filterCSS;
+            tempCtx.filter = filterCSS;
+            tempCtx.drawImage(tempCanvas, 0, 0);
+            
+            return tempCtx.getImageData(0, 0, tempCanvas.width, tempCanvas.height);
+        }
+
+        try {
+            const width = imageData.width;
+            const height = imageData.height;
+            const data = imageData.data;
+
+            const resultCanvas = document.createElement('canvas');
+            const resultCtx = resultCanvas.getContext('2d');
+            resultCanvas.width = width;
+            resultCanvas.height = height;
+            resultCtx.putImageData(imageData, 0, 0);
+            
+            const radius = Math.floor(size / 2);
+            const totalValues = size * size;
+            
+            console.log(`Квантильный фильтр ${size}x${size}, q=${quantile}`);
+
+            for (let y = radius; y < height - radius; y++) {
+
+                const rowBuffer = new Array(width);
                 
-                let intensity = Math.min(size / 39, 1);
-                
-                let filterCSS = '';
-                switch(filterType) {
-                    case 'median':
-                        filterCSS = `contrast(${1 + intensity * 0.5}) saturate(${1 - intensity * 0.3}) blur(${intensity * 1.5}px)`; 
-                        break;
-                    case 'min':
-                        filterCSS = `brightness(${1 - intensity * 0.5}) contrast(${1 + intensity * 0.6}) blur(${intensity * 0.8}px)`; 
-                        break;
-                    case 'max':
-                        filterCSS = `brightness(${1 + intensity * 0.5}) contrast(${1 + intensity * 0.4}) blur(${intensity * 0.8}px)`; 
-                        break;
-                    case 'quantile':
-                        filterCSS = `contrast(${1 + intensity * 0.8}) brightness(${0.7 + intensity * 0.6}) blur(${intensity * 1.0}px)`;
-                        break;
+                for (let x = radius; x < width - radius; x++) {
+
+                    const values = new Array(totalValues);
+                    let idx = 0;
+                    
+                    for (let dy = -radius; dy <= radius; dy++) {
+                        const pixelY = y + dy;
+                        const rowOffset = pixelY * width;
+                        for (let dx = -radius; dx <= radius; dx++) {
+                            const pixelIdx = ((rowOffset + (x + dx)) * 4) + 1;
+                            values[idx++] = data[pixelIdx];
+                        }
+                    }
+
+                    let quantileValue;
+                    if (quantile === 0.0) {
+
+                        quantileValue = Math.min(...values);
+                    } else if (quantile === 0.5) {
+
+                        values.sort((a, b) => a - b);
+                        quantileValue = values[Math.floor(totalValues / 2)];
+                    } else if (quantile === 1.0) {
+
+                        quantileValue = Math.max(...values);
+                    } else {
+
+                        const sorted = values.slice().sort((a, b) => a - b);
+                        const pos = Math.floor(quantile * (totalValues - 1));
+                        quantileValue = sorted[pos];
+                    }
+                    
+                    rowBuffer[x] = quantileValue;
                 }
-                
-                tempCanvas.style.filter = filterCSS;
-                tempCtx.filter = filterCSS;
-                tempCtx.drawImage(tempCanvas, 0, 0);
-                
-                return tempCtx.getImageData(0, 0, tempCanvas.width, tempCanvas.height);
+
+                for (let x = radius; x < width - radius; x++) {
+                    const pixelValue = rowBuffer[x];
+                    const idx = (y * width + x) * 4;
+  
+                    resultCtx.fillStyle = `rgb(${pixelValue}, ${pixelValue}, ${pixelValue})`;
+                    resultCtx.fillRect(x, y, 1, 1);
+                }
+
+                if (y % 20 === 0) {
+                    const start = Date.now();
+                    while (Date.now() - start < 1) {
+                    }
+                }
             }
+            
+            console.log("Квантильный фильтр завершен");
+            return resultCtx.getImageData(0, 0, width, height);
+            
+        } catch (error) {
+            console.error("Ошибка квантильного фильтра:", error);
+            let intensity = Math.min(size / 39, 1);
+            let brightnessAdjust = 0.5 + (quantile - 0.5) * 1.0;
+            let contrastAdjust = 1.0 + Math.abs(quantile - 0.5) * 2.0;
+            
+            let filterCSS = `brightness(${brightnessAdjust}) contrast(${contrastAdjust})`;
+            tempCanvas.style.filter = filterCSS;
+            tempCtx.filter = filterCSS;
+            tempCtx.drawImage(tempCanvas, 0, 0);
+            
+            return tempCtx.getImageData(0, 0, tempCanvas.width, tempCanvas.height);
+        }
+    }
+}
 
             function applyThreshold(imageData, method, windowSize, constantC) {
                 const tempCanvas = document.createElement('canvas');
