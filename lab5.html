@@ -1,0 +1,1540 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Лабораторная работа 5: Алгоритмы отсечения</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #f0f8ff 0%, #e6e6ff 100%);
+            min-height: 100vh;
+            padding: 20px;
+            color: #333;
+        }
+        
+        .container {
+            max-width: 1600px;
+            margin: 0 auto;
+            display: flex;
+            flex-direction: column;
+            gap: 25px;
+        }
+        
+        header {
+            text-align: center;
+            padding: 20px;
+            background: linear-gradient(135deg, #a8d8ff 0%, #c2b3ff 100%);
+            border-radius: 15px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+        
+        h1 {
+            color: #4a4a9c;
+            margin-bottom: 10px;
+            font-size: 2.2rem;
+        }
+        
+        .subtitle {
+            color: #7a7ad9;
+            font-size: 1.1rem;
+            max-width: 800px;
+            margin: 0 auto;
+            line-height: 1.5;
+        }
+        
+        .content {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 25px;
+        }
+        
+        .control-panel {
+            flex: 1;
+            min-width: 320px;
+            max-width: 400px;
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
+            border: 1px solid rgba(200, 200, 255, 0.5);
+        }
+        
+        .visualization-area {
+            flex: 2;
+            min-width: 800px;
+            background: white;
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
+            border: 1px solid rgba(200, 200, 255, 0.5);
+            display: flex;
+            flex-direction: column;
+            height: 750px;
+            position: relative;
+        }
+        
+        .section-title {
+            color: #5a5aaa;
+            border-bottom: 2px solid #b8c8ff;
+            padding-bottom: 10px;
+            margin-bottom: 20px;
+            font-size: 1.4rem;
+        }
+        
+        .input-group {
+            display: flex;
+            flex-direction: column;
+            margin-bottom: 20px;
+        }
+        
+        label {
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: #5a5aaa;
+        }
+        
+        .buttons-row {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+        
+        button {
+            padding: 12px 20px;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            flex: 1;
+            font-size: 1rem;
+        }
+        
+        .primary-btn {
+            background: linear-gradient(135deg, #8a9bff 0%, #a88bff 100%);
+            color: white;
+        }
+        
+        .primary-btn:hover {
+            background: linear-gradient(135deg, #7a8bff 0%, #987bff 100%);
+            transform: translateY(-2px);
+            box-shadow: 0 5px 12px rgba(138, 155, 255, 0.3);
+        }
+        
+        .secondary-btn {
+            background: linear-gradient(135deg, #2ecc71 0%, #27ae60 100%);
+            color: white;
+        }
+        
+        .secondary-btn:hover {
+            background: linear-gradient(135deg, #27ae60 0%, #219653 100%);
+            transform: translateY(-2px);
+            box-shadow: 0 5px 12px rgba(46, 204, 113, 0.3);
+        }
+        
+        .danger-btn {
+            background: linear-gradient(135deg, #ff6b8b 0%, #e74c3c 100%);
+            color: white;
+        }
+        
+        .danger-btn:hover {
+            background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);
+            transform: translateY(-2px);
+            box-shadow: 0 5px 12px rgba(231, 76, 60, 0.3);
+        }
+        
+        .controls-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 15px;
+        }
+        
+        .zoom-controls {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .pan-controls {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .control-btn {
+            width: 40px;
+            height: 40px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+            font-weight: bold;
+            background: linear-gradient(135deg, #a8d8ff 0%, #c2b3ff 100%);
+            color: #5a5aaa;
+            cursor: pointer;
+            border: none;
+            transition: all 0.3s;
+        }
+        
+        .control-btn:hover {
+            background: linear-gradient(135deg, #98c8ff 0%, #b2a3ff 100%);
+            transform: scale(1.1);
+        }
+        
+        .control-label {
+            font-weight: 600;
+            color: #5a5aaa;
+            font-size: 0.9rem;
+            margin-right: 5px;
+        }
+        
+        .canvas-container {
+            flex: 1;
+            position: relative;
+            overflow: hidden;
+            background: white;
+            cursor: crosshair;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 500px;
+        }
+        
+        #canvas {
+            background: white;
+            display: block;
+            border-radius: 0;
+            position: absolute;
+            left: 0;
+            top: 0;
+        }
+        
+        .canvas-wrapper {
+            position: relative;
+            flex: 1;
+            overflow: hidden;
+        }
+        
+        .coordinates-display {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            background: rgba(255, 255, 255, 0.95);
+            padding: 15px 25px;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            border: 1px solid rgba(200, 200, 255, 0.5);
+            text-align: center;
+            min-width: 200px;
+            z-index: 10;
+        }
+        
+        .coordinates-title {
+            font-weight: 600;
+            color: #5a5aaa;
+            margin-bottom: 8px;
+            font-size: 1.1rem;
+        }
+        
+        .coordinates-value {
+            font-family: 'Courier New', monospace;
+            font-size: 1.2rem;
+            color: #4a4a9c;
+            font-weight: bold;
+        }
+        
+        .info-panel {
+            background: #f8f9ff;
+            padding: 20px;
+            border-top: 1px solid #e0e7ff;
+            max-height: 300px;
+            overflow-y: auto;
+            flex-shrink: 0;
+        }
+        
+        .legend {
+            margin-top: 25px;
+            padding: 20px;
+            background: linear-gradient(135deg, #f8f9fa, #eef2ff);
+            border-radius: 10px;
+            border-left: 4px solid #8a9bff;
+        }
+        
+        .legend-item {
+            display: flex;
+            align-items: center;
+            margin-bottom: 12px;
+            font-weight: 500;
+        }
+        
+        .color-box {
+            width: 24px;
+            height: 24px;
+            border-radius: 6px;
+            margin-right: 15px;
+            border: 2px solid white;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+        
+        .status {
+            margin-top: 20px;
+            padding: 16px;
+            border-radius: 10px;
+            font-weight: 500;
+            text-align: center;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+        }
+        
+        .status.show {
+            display: flex;
+        }
+        
+        .status.success {
+            background: linear-gradient(135deg, #d4edda, #c3e6cb);
+            color: #155724;
+            border: 2px solid #b1dfbb;
+        }
+        
+        .status.error {
+            background: linear-gradient(135deg, #f8d7da, #f5c6cb);
+            color: #721c24;
+            border: 2px solid #f1b0b7;
+        }
+        
+        .status.info {
+            background: linear-gradient(135deg, #d1ecf1, #bee5eb);
+            color: #0c5460;
+            border: 2px solid #abdde5;
+        }
+        
+        .help-text {
+            margin-top: 15px;
+            font-size: 0.85rem;
+            color: #7a7ad9;
+            text-align: center;
+            font-style: italic;
+        }
+        
+        .mode-buttons {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        
+        .mode-btn {
+            padding: 12px;
+            background: #f8f9ff;
+            border: 2px solid #d0d8ff;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-align: center;
+        }
+        
+        .mode-btn.active {
+            background: #8a9bff;
+            color: white;
+            border-color: #8a9bff;
+            box-shadow: 0 3px 8px rgba(138, 155, 255, 0.3);
+        }
+        
+        .mode-btn:hover:not(.active) {
+            background: #eef2ff;
+            transform: translateY(-2px);
+        }
+        
+        .points-list {
+            margin-top: 20px;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        
+        .points-list-title {
+            font-weight: 600;
+            color: #5a5aaa;
+            margin-bottom: 10px;
+            padding-bottom: 5px;
+            border-bottom: 1px solid #e0e7ff;
+        }
+        
+        .points-container {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+        
+        .point-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 6px 10px;
+            background: #f8f9ff;
+            border-radius: 6px;
+            font-size: 0.85rem;
+            align-items: center;
+        }
+        
+        .point-coords {
+            font-family: 'Courier New', monospace;
+            color: #4a4a9c;
+            flex: 1;
+        }
+        
+        .point-type {
+            color: #7a7ad9;
+            font-weight: 500;
+            min-width: 120px;
+            text-align: right;
+        }
+        
+        .points-list::-webkit-scrollbar {
+            width: 6px;
+        }
+        
+        .points-list::-webkit-scrollbar-track {
+            background: #f0f4ff;
+            border-radius: 3px;
+        }
+        
+        .points-list::-webkit-scrollbar-thumb {
+            background: #8a9bff;
+            border-radius: 3px;
+        }
+        
+        .navigation-buttons {
+            position: absolute;
+            right: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            z-index: 20;
+        }
+        
+        .nav-btn {
+            width: 40px;
+            height: 40px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+            font-weight: bold;
+            background: linear-gradient(135deg, #a8d8ff 0%, #c2b3ff 100%);
+            color: #5a5aaa;
+            cursor: pointer;
+            border: none;
+            transition: all 0.3s;
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.1);
+        }
+        
+        .nav-btn:hover {
+            background: linear-gradient(135deg, #98c8ff 0%, #b2a3ff 100%);
+            transform: scale(1.1);
+        }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-top: 15px;
+        }
+        
+        .stat-item {
+            background: #f0f4ff;
+            padding: 12px;
+            border-radius: 8px;
+            text-align: center;
+        }
+        
+        .stat-value {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #4a4a9c;
+            display: block;
+            margin-top: 5px;
+        }
+        
+        footer {
+            text-align: center;
+            padding: 20px;
+            color: #7a7ad9;
+            font-size: 0.9rem;
+            margin-top: 10px;
+            background: rgba(255, 255, 255, 0.8);
+            border-radius: 10px;
+        }
+        
+        @media (max-width: 1400px) {
+            .content {
+                flex-direction: column;
+            }
+            
+            .visualization-area, .control-panel {
+                min-width: 100%;
+                max-width: 100%;
+            }
+            
+            .visualization-area {
+                height: auto;
+            }
+            
+            .canvas-container {
+                min-height: 600px;
+            }
+            
+            .controls-row {
+                flex-direction: column;
+                gap: 15px;
+            }
+        }
+        
+        @media (max-width: 900px) {
+            .container {
+                padding: 10px;
+            }
+            
+            .canvas-container {
+                min-height: 500px;
+            }
+            
+            .navigation-buttons {
+                display: none;
+            }
+            
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Лабораторная работа 5: Алгоритмы отсечения</h1>
+            <p class="subtitle">Вариант 15: Алгоритм средней точки и отсечение выпуклого многоугольника</p>
+        </header>
+        
+        <div class="content">
+            <div class="control-panel">
+                <h2 class="section-title">Управление</h2>
+                
+                <div class="mode-buttons">
+                    <button class="mode-btn active" data-mode="window">Окно (2 клика)</button>
+                    <button class="mode-btn" data-mode="polygon">Многоугольник (клик в стартовую точку для завершения)</button>
+                    <button class="mode-btn" data-mode="segment">Отрезок (2 клика)</button>
+                </div>
+                
+                <div class="help-text">
+                    <strong>Инструкция:</strong><br>
+                    ЛКМ: добавить точку текущего элемента<br>
+                    Enter: завершить текущий элемент<br>
+                    Delete: удалить последнюю точку
+                </div>
+                
+                <div class="points-list">
+                    <div class="points-list-title">Заданные точки:</div>
+                    <div class="points-container" id="points-container">
+                        <div class="point-item">
+                            <span class="point-coords">(0, 0)</span>
+                            <span class="point-type">[Окно] Точка 1</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="buttons-row">
+                    <button class="secondary-btn" id="load-example">
+                        Загрузить пример
+                    </button>
+                    <button class="danger-btn" id="clear-btn">
+                        Очистить всё
+                    </button>
+                </div>
+                
+                <div class="buttons-row">
+                    <button class="primary-btn" id="clip-btn">
+                        Выполнить отсечение
+                    </button>
+                </div>
+                
+                <div class="controls-row">
+                    <div class="zoom-controls">
+                        <span class="control-label">Масштаб:</span>
+                        <button class="control-btn" id="zoom-out">-</button>
+                        <div class="control-label" id="zoom-level">1x</div>
+                        <button class="control-btn" id="zoom-in">+</button>
+                    </div>
+                    
+                    <div class="pan-controls">
+                        <span class="control-label">Сброс:</span>
+                        <button class="control-btn" id="reset-view">⟲</button>
+                    </div>
+                </div>
+                
+                <div class="legend">
+                    <h3 class="section-title" style="border-bottom: none; margin-bottom: 15px; font-size: 1.1rem;">Легенда</h3>
+                    <div class="legend-item">
+                        <div class="color-box" style="background-color: #3498db;"></div>
+                        <span>Отсекающее окно</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="color-box" style="background-color: #9b59b6;"></div>
+                        <span>Выпуклый многоугольник</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="color-box" style="background-color: #e74c3c;"></div>
+                        <span>Исходные отрезки</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="color-box" style="background-color: #ff9800;"></div>
+                        <span>Точки отсечения</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="color-box" style="background-color: #2ecc71;"></div>
+                        <span>Результат отсечения</span>
+                    </div>
+                </div>
+                
+                <div class="status info" id="status">
+                    <span>Выберите режим и кликайте на холсте для добавления точек</span>
+                </div>
+                
+                <div class="help-text">
+                    Для перемещения используйте кнопки со стрелками справа от холста
+                </div>
+            </div>
+            
+            <div class="visualization-area">
+                <div class="canvas-wrapper">
+                    <div class="canvas-container" id="canvas-container">
+                        <canvas id="canvas" width="1000" height="600"></canvas>
+                        
+                        <div class="coordinates-display">
+                            <div class="coordinates-title">Координаты мыши:</div>
+                            <div class="coordinates-value" id="center-coords">(0, 0)</div>
+                        </div>
+                        
+                        <div class="navigation-buttons">
+                            <button class="nav-btn" id="nav-up">↑</button>
+                            <button class="nav-btn" id="nav-left">←</button>
+                            <button class="nav-btn" id="nav-right">→</button>
+                            <button class="nav-btn" id="nav-down">↓</button>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="info-panel">
+                    <h3 class="section-title" style="border-bottom: none;">Статистика</h3>
+                    <div id="algorithm-stats">
+                        <div class="stats-grid">
+                            <div class="stat-item">
+                                Отсекающее окно
+                                <span class="stat-value" id="window-status">Нет</span>
+                            </div>
+                            <div class="stat-item">
+                                Отрезков
+                                <span class="stat-value" id="lines-count">0</span>
+                            </div>
+                            <div class="stat-item">
+                                Вершин многоугольника
+                                <span class="stat-value" id="polygon-points-count">0</span>
+                            </div>
+                            <div class="stat-item">
+                                Видимых частей
+                                <span class="stat-value" id="visible-parts-count">0</span>
+                            </div>
+                        </div>
+                        <p style="margin-top: 15px; color: #666; font-size: 0.9rem;">
+                            <strong>Алгоритм средней точки:</strong> для отсечения отрезков<br>
+                            <strong>Алгоритм Sutherland-Hodgman:</strong> для отсечения выпуклого многоугольника
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <footer>
+            Лабораторная работа по компьютерной графике. Вариант 15.<br>
+            Алгоритмы: средней точки и отсечение выпуклого многоугольника.
+        </footer>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+        const modeButtons = document.querySelectorAll('.mode-btn');
+        const loadExampleBtn = document.getElementById('load-example');
+        const clipBtn = document.getElementById('clip-btn');
+        const clearBtn = document.getElementById('clear-btn');
+        const zoomInBtn = document.getElementById('zoom-in');
+        const zoomOutBtn = document.getElementById('zoom-out');
+        const resetViewBtn = document.getElementById('reset-view');
+        const zoomLevelElement = document.getElementById('zoom-level');
+        const centerCoordsElement = document.getElementById('center-coords');
+        const statusDiv = document.getElementById('status');
+        const pointsContainer = document.getElementById('points-container');
+        const canvasContainer = document.getElementById('canvas-container');
+        
+        const navUp = document.getElementById('nav-up');
+        const navDown = document.getElementById('nav-down');
+        const navLeft = document.getElementById('nav-left');
+        const navRight = document.getElementById('nav-right');
+        
+        let currentMode = 'window';
+        let scale = 1;
+        const baseGridSize = 20;
+        
+        let offsetX = 0;
+        let offsetY = 0;
+        const step = 50;
+        
+        let state = {
+            clipWindow: null,
+            convexPolygon: [],
+            polygonComplete: false,
+            lines: [],
+            clippedLines: [],
+            currentPoints: [],
+            allPoints: [],
+            intersectionPoints: []
+        };
+        
+        function init() {
+            modeButtons.forEach(btn => {
+                btn.addEventListener('click', function() {
+                    modeButtons.forEach(b => b.classList.remove('active'));
+                    this.classList.add('active');
+                    currentMode = this.dataset.mode;
+                    
+                    state.currentPoints = [];
+                    updateStatus(`Режим: ${getModeName(currentMode)}. Кликните на холсте для добавления точек`, 'info');
+                    updatePointsList();
+                    redrawAll();
+                });
+            });
+            
+            loadExampleBtn.addEventListener('click', loadExampleData);
+            clipBtn.addEventListener('click', performClipping);
+            clearBtn.addEventListener('click', clearAll);
+            
+            zoomInBtn.addEventListener('click', () => {
+                scale = Math.min(scale * 1.2, 5);
+                updateZoom();
+                redrawAll();
+            });
+            
+            zoomOutBtn.addEventListener('click', () => {
+                scale = Math.max(scale / 1.2, 0.2);
+                updateZoom();
+                redrawAll();
+            });
+            
+            resetViewBtn.addEventListener('click', () => {
+                scale = 1;
+                offsetX = 0;
+                offsetY = 0;
+                updateZoom();
+                redrawAll();
+            });
+            
+            navUp.addEventListener('click', () => {
+                offsetY += step;
+                redrawAll();
+            });
+            
+            navDown.addEventListener('click', () => {
+                offsetY -= step;
+                redrawAll();
+            });
+            
+            navLeft.addEventListener('click', () => {
+                offsetX += step;
+                redrawAll();
+            });
+            
+            navRight.addEventListener('click', () => {
+                offsetX -= step;
+                redrawAll();
+            });
+            
+            canvas.addEventListener('click', handleCanvasClick);
+            
+            canvas.addEventListener('mousemove', (e) => {
+                const rect = canvas.getBoundingClientRect();
+                const x = e.clientX - rect.left;
+                const y = e.clientY - rect.top;
+                
+                const gridX = Math.round((x - canvas.width/2 - offsetX) / (baseGridSize * scale));
+                const gridY = Math.round((canvas.height/2 + offsetY - y) / (baseGridSize * scale));
+                
+                centerCoordsElement.textContent = `(${gridX}, ${gridY})`;
+                
+                if (currentMode === 'segment' && state.currentPoints.length === 1) {
+                    redrawAll();
+                }
+            });
+            
+            document.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    finishCurrentElement();
+                } else if (e.key === 'Delete' || e.key === 'Backspace') {
+                    e.preventDefault();
+                    removeLastPoint();
+                } else if (e.key === 'ArrowUp') {
+                    e.preventDefault();
+                    offsetY += step;
+                    redrawAll();
+                } else if (e.key === 'ArrowDown') {
+                    e.preventDefault();
+                    offsetY -= step;
+                    redrawAll();
+                } else if (e.key === 'ArrowLeft') {
+                    e.preventDefault();
+                    offsetX += step;
+                    redrawAll();
+                } else if (e.key === 'ArrowRight') {
+                    e.preventDefault();
+                    offsetX -= step;
+                    redrawAll();
+                }
+            });
+            
+            updateZoom();
+            updateStatus('Выберите режим и кликайте на холсте для добавления точек', 'info');
+            redrawAll();
+        }
+        
+        function handleCanvasClick(e) {
+            const rect = canvas.getBoundingClientRect();
+            const x = e.clientX - rect.left;
+            const y = e.clientY - rect.top;
+            
+            const gridX = Math.round((x - canvas.width/2 - offsetX) / (baseGridSize * scale));
+            const gridY = Math.round((canvas.height/2 + offsetY - y) / (baseGridSize * scale));
+            
+            if (currentMode === 'polygon' && state.currentPoints.length >= 3) {
+                const firstPoint = state.currentPoints[0];
+                const distance = Math.sqrt(Math.pow(gridX - firstPoint.x, 2) + Math.pow(gridY - firstPoint.y, 2));
+                if (distance < 1.5) {
+                    finishCurrentElement();
+                    return;
+                }
+            }
+            
+            addPoint(gridX, gridY);
+        }
+        
+        function addPoint(gridX, gridY) {
+            let pointLabel = '';
+            let pointIndex = state.allPoints.length + 1;
+            
+            switch(currentMode) {
+                case 'window':
+                    const windowPointNum = state.currentPoints.length + 1;
+                    pointLabel = `[Окно] Точка ${windowPointNum}`;
+                    break;
+                case 'polygon':
+                    const polyPointNum = state.currentPoints.length + 1;
+                    pointLabel = `[Многоугольник] Вершина ${polyPointNum}`;
+                    break;
+                case 'segment':
+                    if (state.currentPoints.length === 0) {
+                        pointLabel = `[Отрезок ${state.lines.length + 1}] Начало`;
+                    } else {
+                        pointLabel = `[Отрезок ${state.lines.length + 1}] Конец`;
+                    }
+                    break;
+            }
+            
+            const point = { 
+                x: gridX, 
+                y: gridY, 
+                type: currentMode,
+                label: pointLabel,
+                index: pointIndex
+            };
+            
+            state.currentPoints.push(point);
+            state.allPoints.push(point);
+            
+            updateStatus(`Добавлена ${pointLabel} (${gridX}, ${gridY})`, 'success');
+            
+            if (currentMode === 'window' && state.currentPoints.length === 2) {
+                finishCurrentElement();
+            } else if (currentMode === 'segment' && state.currentPoints.length === 2) {
+                finishCurrentElement();
+            }
+            
+            updatePointsList();
+            redrawAll();
+        }
+        
+        function removeLastPoint() {
+            if (state.currentPoints.length > 0) {
+                const removed = state.currentPoints.pop();
+                state.allPoints.pop();
+                updateStatus(`Удалена ${removed.label} (${removed.x}, ${removed.y})`, 'info');
+                updatePointsList();
+                redrawAll();
+            }
+        }
+        
+        function finishCurrentElement() {
+            if (state.currentPoints.length === 0) return;
+            
+            switch(currentMode) {
+                case 'window':
+                    if (state.currentPoints.length === 2) {
+                        const p1 = state.currentPoints[0];
+                        const p2 = state.currentPoints[1];
+                        state.clipWindow = {
+                            x1: Math.min(p1.x, p2.x),
+                            y1: Math.min(p1.y, p2.y),
+                            x2: Math.max(p1.x, p2.x),
+                            y2: Math.max(p1.y, p2.y)
+                        };
+                        updateStatus('Отсекающее окно создано', 'success');
+                    }
+                    break;
+                    
+                case 'polygon':
+                    if (state.currentPoints.length >= 3) {
+                        state.convexPolygon = [...state.currentPoints];
+                        state.polygonComplete = true;
+                        updateStatus(`Выпуклый многоугольник создан (${state.currentPoints.length} вершин)`, 'success');
+                    }
+                    break;
+                    
+                case 'segment':
+                    if (state.currentPoints.length === 2) {
+                        const p1 = state.currentPoints[0];
+                        const p2 = state.currentPoints[1];
+                        const segmentIndex = state.lines.length + 1;
+                        state.lines.push({ 
+                            x1: p1.x, 
+                            y1: p1.y, 
+                            x2: p2.x, 
+                            y2: p2.y,
+                            index: segmentIndex
+                        });
+                        updateStatus(`Отрезок ${segmentIndex} добавлен`, 'success');
+                    }
+                    break;
+            }
+            
+            state.currentPoints = [];
+            updatePointsList();
+            redrawAll();
+        }
+        
+        function updatePointsList() {
+            pointsContainer.innerHTML = '';
+            
+            if (state.allPoints.length === 0) {
+                const emptyMsg = document.createElement('div');
+                emptyMsg.className = 'point-item';
+                emptyMsg.innerHTML = '<span class="point-coords">Нет добавленных точек</span><span class="point-type"></span>';
+                pointsContainer.appendChild(emptyMsg);
+                return;
+            }
+            
+            state.allPoints.forEach((point) => {
+                const pointItem = document.createElement('div');
+                pointItem.className = 'point-item';
+                
+                pointItem.innerHTML = `
+                    <span class="point-coords">(${point.x}, ${point.y})</span>
+                    <span class="point-type">${point.label}</span>
+                `;
+                
+                pointsContainer.appendChild(pointItem);
+            });
+        }
+        
+        function updateStats() {
+            document.getElementById('window-status').textContent = state.clipWindow ? 'Создано' : 'Нет';
+            document.getElementById('lines-count').textContent = state.lines.length;
+            document.getElementById('polygon-points-count').textContent = state.convexPolygon.length;
+            
+            let visibleParts = 0;
+            if (state.clippedLines.length > 0) {
+                visibleParts = state.clippedLines.length;
+            }
+            document.getElementById('visible-parts-count').textContent = visibleParts;
+        }
+        
+        function updateZoom() {
+            zoomLevelElement.textContent = `${scale.toFixed(1)}x`;
+        }
+        
+        function updateStatus(message, type) {
+            statusDiv.querySelector('span').textContent = message;
+            statusDiv.className = 'status ' + type + ' show';
+            
+            setTimeout(() => {
+                statusDiv.classList.remove('show');
+            }, 4000);
+        }
+        
+        function getModeName(mode) {
+            const names = {
+                'window': 'Окно (2 клика)',
+                'polygon': 'Многоугольник (клик в стартовую точку для завершения)',
+                'segment': 'Отрезок (2 клика)'
+            };
+            return names[mode] || mode;
+        }
+        
+        function loadExampleData() {
+            clearAll();
+            
+            state.allPoints = [
+                { x: -5, y: -5, type: 'window', label: '[Окно] Точка 1', index: 1 },
+                { x: 5, y: 5, type: 'window', label: '[Окно] Точка 2', index: 2 },
+                { x: -8, y: 0, type: 'polygon', label: '[Многоугольник] Вершина 1', index: 3 },
+                { x: -4, y: 6, type: 'polygon', label: '[Многоугольник] Вершина 2', index: 4 },
+                { x: 4, y: 6, type: 'polygon', label: '[Многоугольник] Вершина 3', index: 5 },
+                { x: 8, y: 0, type: 'polygon', label: '[Многоугольник] Вершина 4', index: 6 },
+                { x: 4, y: -6, type: 'polygon', label: '[Многоугольник] Вершина 5', index: 7 },
+                { x: -4, y: -6, type: 'polygon', label: '[Многоугольник] Вершина 6', index: 8 },
+                { x: -10, y: -10, type: 'segment', label: '[Отрезок 1] Начало', index: 9 },
+                { x: 10, y: 10, type: 'segment', label: '[Отрезок 1] Конец', index: 10 },
+                { x: -10, y: 0, type: 'segment', label: '[Отрезок 2] Начало', index: 11 },
+                { x: 10, y: 0, type: 'segment', label: '[Отрезок 2] Конец', index: 12 }
+            ];
+            
+            state.clipWindow = { x1: -5, y1: -5, x2: 5, y2: 5 };
+            state.convexPolygon = [
+                { x: -8, y: 0, label: '[Многоугольник] Вершина 1' },
+                { x: -4, y: 6, label: '[Многоугольник] Вершина 2' },
+                { x: 4, y: 6, label: '[Многоугольник] Вершина 3' },
+                { x: 8, y: 0, label: '[Многоугольник] Вершина 4' },
+                { x: 4, y: -6, label: '[Многоугольник] Вершина 5' },
+                { x: -4, y: -6, label: '[Многоугольник] Вершина 6' }
+            ];
+            state.polygonComplete = true;
+            state.lines = [
+                { x1: -10, y1: -10, x2: 10, y2: 10, index: 1 },
+                { x1: -10, y1: 0, x2: 10, y2: 0, index: 2 }
+            ];
+            state.clippedLines = [];
+            state.intersectionPoints = [];
+            
+            updatePointsList();
+            updateStatus('Пример данных загружен', 'success');
+            redrawAll();
+        }
+        
+        function clearAll() {
+            state.clipWindow = null;
+            state.convexPolygon = [];
+            state.polygonComplete = false;
+            state.lines = [];
+            state.clippedLines = [];
+            state.currentPoints = [];
+            state.allPoints = [];
+            state.intersectionPoints = [];
+            
+            updatePointsList();
+            updateStats();
+            updateStatus('Все данные очищены', 'info');
+            redrawAll();
+        }
+        
+        function drawGrid() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            ctx.fillStyle = '#ffffff';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            
+            const gridSize = baseGridSize * scale;
+            const centerX = canvas.width / 2 + offsetX;
+            const centerY = canvas.height / 2 + offsetY;
+            
+            ctx.strokeStyle = '#e0e7ff';
+            ctx.lineWidth = 0.5;
+            
+            for (let x = centerX % gridSize; x < canvas.width; x += gridSize) {
+                ctx.beginPath();
+                ctx.moveTo(x, 0);
+                ctx.lineTo(x, canvas.height);
+                ctx.stroke();
+            }
+            
+            for (let x = centerX - gridSize; x >= 0; x -= gridSize) {
+                ctx.beginPath();
+                ctx.moveTo(x, 0);
+                ctx.lineTo(x, canvas.height);
+                ctx.stroke();
+            }
+            
+            for (let y = centerY % gridSize; y < canvas.height; y += gridSize) {
+                ctx.beginPath();
+                ctx.moveTo(0, y);
+                ctx.lineTo(canvas.width, y);
+                ctx.stroke();
+            }
+            
+            for (let y = centerY - gridSize; y >= 0; y -= gridSize) {
+                ctx.beginPath();
+                ctx.moveTo(0, y);
+                ctx.lineTo(canvas.width, y);
+                ctx.stroke();
+            }
+            
+            ctx.strokeStyle = '#8a9bff';
+            ctx.lineWidth = 2;
+            
+            ctx.beginPath();
+            ctx.moveTo(0, centerY);
+            ctx.lineTo(canvas.width, centerY);
+            ctx.stroke();
+            
+            ctx.beginPath();
+            ctx.moveTo(centerX, 0);
+            ctx.lineTo(centerX, canvas.height);
+            ctx.stroke();
+            
+            ctx.fillStyle = '#5a5aaa';
+            ctx.font = '14px Arial';
+            ctx.fillText('X', canvas.width - 10, centerY - 10);
+            ctx.fillText('Y', centerX + 10, 15);
+            
+            ctx.fillStyle = '#8a9bff';
+            ctx.font = '12px Arial';
+            
+            for (let i = 1; (centerX + i * gridSize) < canvas.width; i++) {
+                const x = centerX + i * gridSize;
+                ctx.fillText(i.toString(), x - 3, centerY + 15);
+            }
+            
+            for (let i = 1; (centerX - i * gridSize) > 0; i++) {
+                const x = centerX - i * gridSize;
+                ctx.fillText('-' + i.toString(), x - 8, centerY + 15);
+            }
+            
+            for (let i = 1; (centerY - i * gridSize) > 0; i++) {
+                const y = centerY - i * gridSize;
+                ctx.fillText(i.toString(), centerX + 10, y + 4);
+            }
+            
+            for (let i = 1; (centerY + i * gridSize) < canvas.height; i++) {
+                const y = centerY + i * gridSize;
+                ctx.fillText('-' + i.toString(), centerX + 10, y + 4);
+            }
+            
+            ctx.fillStyle = '#5a5aaa';
+            ctx.fillText('0', centerX + 5, centerY + 15);
+        }
+        
+        function gridToScreen(gridX, gridY) {
+            const gridSize = baseGridSize * scale;
+            const centerX = canvas.width / 2 + offsetX;
+            const centerY = canvas.height / 2 + offsetY;
+            
+            return {
+                x: centerX + gridX * gridSize,
+                y: centerY - gridY * gridSize
+            };
+        }
+        
+        function drawLine(gridX1, gridY1, gridX2, gridY2, color = '#e74c3c', width = 2, dashed = false) {
+            const screenCoords1 = gridToScreen(gridX1, gridY1);
+            const screenCoords2 = gridToScreen(gridX2, gridY2);
+            
+            ctx.strokeStyle = color;
+            ctx.lineWidth = width;
+            
+            if (dashed) {
+                ctx.setLineDash([5, 5]);
+            } else {
+                ctx.setLineDash([]);
+            }
+            
+            ctx.beginPath();
+            ctx.moveTo(screenCoords1.x, screenCoords1.y);
+            ctx.lineTo(screenCoords2.x, screenCoords2.y);
+            ctx.stroke();
+            
+            ctx.setLineDash([]);
+        }
+        
+        function drawPoint(gridX, gridY, color = '#e74c3c', size = 6, label = '') {
+            const screenCoords = gridToScreen(gridX, gridY);
+            
+            ctx.fillStyle = color;
+            ctx.beginPath();
+            ctx.arc(screenCoords.x, screenCoords.y, size, 0, Math.PI * 2);
+            ctx.fill();
+            
+            ctx.strokeStyle = '#5a5aaa';
+            ctx.lineWidth = 1;
+            ctx.beginPath();
+            ctx.arc(screenCoords.x, screenCoords.y, size, 0, Math.PI * 2);
+            ctx.stroke();
+            
+            if (label) {
+                ctx.fillStyle = '#5a5aaa';
+                ctx.font = 'bold 12px Arial';
+                ctx.fillText(label, screenCoords.x + 8, screenCoords.y - 8);
+            }
+        }
+        
+        function drawPolygon(polygon, fillColor = 'rgba(155, 89, 182, 0.15)', strokeColor = '#9b59b6') {
+            if (polygon.length < 2) return;
+            
+            ctx.beginPath();
+            const firstPoint = gridToScreen(polygon[0].x, polygon[0].y);
+            ctx.moveTo(firstPoint.x, firstPoint.y);
+            
+            for (let i = 1; i < polygon.length; i++) {
+                const point = gridToScreen(polygon[i].x, polygon[i].y);
+                ctx.lineTo(point.x, point.y);
+            }
+            
+            if (state.polygonComplete) {
+                ctx.closePath();
+                ctx.fillStyle = fillColor;
+                ctx.fill();
+            }
+            
+            ctx.strokeStyle = strokeColor;
+            ctx.lineWidth = state.polygonComplete ? 3 : 2;
+            ctx.stroke();
+            
+            polygon.forEach((point, index) => {
+                drawPoint(point.x, point.y, '#8e44ad', 4, `${index + 1}`);
+            });
+        }
+        
+        function drawClipWindow(clipWindow) {
+            if (!clipWindow) return;
+            
+            const screenCoords1 = gridToScreen(clipWindow.x1, clipWindow.y1);
+            const screenCoords2 = gridToScreen(clipWindow.x2, clipWindow.y2);
+            
+            const width = screenCoords2.x - screenCoords1.x;
+            const height = screenCoords1.y - screenCoords2.y;
+            
+            ctx.fillStyle = 'rgba(52, 152, 219, 0.1)';
+            ctx.fillRect(screenCoords1.x, screenCoords2.y, width, height);
+            
+            ctx.strokeStyle = '#3498db';
+            ctx.lineWidth = 2;
+            ctx.strokeRect(screenCoords1.x, screenCoords2.y, width, height);
+            
+            drawPoint(clipWindow.x1, clipWindow.y1, '#3498db', 6, 'A');
+            drawPoint(clipWindow.x2, clipWindow.y2, '#3498db', 6, 'B');
+        }
+        
+        function drawIntersectionPoints() {
+            state.intersectionPoints.forEach((point, index) => {
+                drawPoint(point.x, point.y, '#ff9800', 8, `I${index + 1}`);
+            });
+        }
+        
+        function drawCurrentPoints() {
+            state.currentPoints.forEach((point, index) => {
+                let color = '#ff9800';
+                if (currentMode === 'window') color = '#3498db';
+                if (currentMode === 'polygon') color = '#9b59b6';
+                if (currentMode === 'segment') color = '#e74c3c';
+                
+                drawPoint(point.x, point.y, color, 6, `${index + 1}`);
+                
+                if (index > 0) {
+                    const prevPoint = state.currentPoints[index - 1];
+                    drawLine(prevPoint.x, prevPoint.y, point.x, point.y, color, 2, true);
+                }
+            });
+            
+            if (currentMode === 'polygon' && state.currentPoints.length >= 3) {
+                const firstPoint = state.currentPoints[0];
+                const lastPoint = state.currentPoints[state.currentPoints.length - 1];
+                if (firstPoint && lastPoint) {
+                    drawLine(lastPoint.x, lastPoint.y, firstPoint.x, firstPoint.y, '#9b59b6', 2, true);
+                }
+            }
+            
+            if (currentMode === 'segment' && state.currentPoints.length === 1) {
+                const rect = canvas.getBoundingClientRect();
+                const mouseEvent = window.event;
+                if (mouseEvent && mouseEvent.type === 'mousemove') {
+                    const x = mouseEvent.clientX - rect.left;
+                    const y = mouseEvent.clientY - rect.top;
+                    
+                    const gridX = Math.round((x - canvas.width/2 - offsetX) / (baseGridSize * scale));
+                    const gridY = Math.round((canvas.height/2 + offsetY - y) / (baseGridSize * scale));
+                    
+                    const point = state.currentPoints[0];
+                    drawLine(point.x, point.y, gridX, gridY, '#e74c3c', 1, true);
+                }
+            }
+        }
+        
+        function redrawAll() {
+            drawGrid();
+            
+            drawClipWindow(state.clipWindow);
+            
+            if (state.convexPolygon.length > 0) {
+                drawPolygon(state.convexPolygon);
+            }
+            
+            state.lines.forEach(line => {
+                drawLine(line.x1, line.y1, line.x2, line.y2, 'rgba(231, 76, 60, 0.7)', 2);
+                drawPoint(line.x1, line.y1, '#e74c3c', 6, `S${line.index}A`);
+                drawPoint(line.x2, line.y2, '#e74c3c', 6, `S${line.index}B`);
+            });
+            
+            drawIntersectionPoints();
+            
+            state.clippedLines.forEach(line => {
+                drawLine(line.x1, line.y1, line.x2, line.y2, '#2ecc71', 3);
+                drawPoint(line.x1, line.y1, '#2ecc71', 6, 'C');
+                drawPoint(line.x2, line.y2, '#2ecc71', 6, 'D');
+            });
+            
+            drawCurrentPoints();
+            
+            updateStats();
+        }
+        
+        function midpointClip(line, clip) {
+            function isInside(point) {
+                return point.x >= clip.x1 && point.x <= clip.x2 &&
+                       point.y >= clip.y1 && point.y <= clip.y2;
+            }
+            
+            function findIntersection(p1, p2) {
+                let dx = p2.x - p1.x;
+                let dy = p2.y - p1.y;
+                
+                let t = Infinity;
+                let intersection = null;
+                
+                if (dx !== 0) {
+                    let tLeft = (clip.x1 - p1.x) / dx;
+                    if (tLeft >= 0 && tLeft <= 1) {
+                        let y = p1.y + tLeft * dy;
+                        if (y >= clip.y1 && y <= clip.y2) {
+                            if (tLeft < t) {
+                                t = tLeft;
+                                intersection = { x: clip.x1, y: y };
+                            }
+                        }
+                    }
+                }
+                
+                if (dx !== 0) {
+                    let tRight = (clip.x2 - p1.x) / dx;
+                    if (tRight >= 0 && tRight <= 1) {
+                        let y = p1.y + tRight * dy;
+                        if (y >= clip.y1 && y <= clip.y2) {
+                            if (tRight < t) {
+                                t = tRight;
+                                intersection = { x: clip.x2, y: y };
+                            }
+                        }
+                    }
+                }
+                
+                if (dy !== 0) {
+                    let tBottom = (clip.y1 - p1.y) / dy;
+                    if (tBottom >= 0 && tBottom <= 1) {
+                        let x = p1.x + tBottom * dx;
+                        if (x >= clip.x1 && x <= clip.x2) {
+                            if (tBottom < t) {
+                                t = tBottom;
+                                intersection = { x: x, y: clip.y1 };
+                            }
+                        }
+                    }
+                }
+                
+                if (dy !== 0) {
+                    let tTop = (clip.y2 - p1.y) / dy;
+                    if (tTop >= 0 && tTop <= 1) {
+                        let x = p1.x + tTop * dx;
+                        if (x >= clip.x1 && x <= clip.x2) {
+                            if (tTop < t) {
+                                t = tTop;
+                                intersection = { x: x, y: clip.y2 };
+                            }
+                        }
+                    }
+                }
+                
+                return intersection;
+            }
+            
+            let p1 = { x: line.x1, y: line.y1 };
+            let p2 = { x: line.x2, y: line.y2 };
+            
+            let inside1 = isInside(p1);
+            let inside2 = isInside(p2);
+            
+            if (inside1 && inside2) {
+                return { x1: p1.x, y1: p1.y, x2: p2.x, y2: p2.y };
+            }
+            
+            if (!inside1 && !inside2) {
+                let i1 = findIntersection(p1, p2);
+                let i2 = findIntersection(p2, p1);
+                
+                if (i1 && i2) {
+                    return { x1: i1.x, y1: i1.y, x2: i2.x, y2: i2.y };
+                }
+                return null;
+            }
+            
+            if (inside1 && !inside2) {
+                let intersection = findIntersection(p1, p2);
+                if (intersection) {
+                    return { x1: p1.x, y1: p1.y, x2: intersection.x, y2: intersection.y };
+                }
+            } else if (!inside1 && inside2) {
+                let intersection = findIntersection(p2, p1);
+                if (intersection) {
+                    return { x1: intersection.x, y1: intersection.y, x2: p2.x, y2: p2.y };
+                }
+            }
+            
+            return null;
+        }
+        
+        function sutherlandHodgmanClip(polygon, clip) {
+            if (polygon.length < 3) return polygon;
+            
+            function clipAgainstEdge(inputPoly, edge) {
+                let outputList = [];
+                
+                for (let i = 0; i < inputPoly.length; i++) {
+                    let current = inputPoly[i];
+                    let next = inputPoly[(i + 1) % inputPoly.length];
+                    
+                    let currentInside = isInside(current, edge);
+                    let nextInside = isInside(next, edge);
+                    
+                    if (currentInside && nextInside) {
+                        outputList.push(next);
+                    } else if (currentInside && !nextInside) {
+                        let intersection = computeIntersection(current, next, edge);
+                        if (intersection) outputList.push(intersection);
+                    } else if (!currentInside && nextInside) {
+                        let intersection = computeIntersection(current, next, edge);
+                        if (intersection) outputList.push(intersection);
+                        outputList.push(next);
+                    }
+                }
+                
+                return outputList;
+            }
+            
+            function isInside(point, edge) {
+                if (edge === 'left') return point.x >= clip.x1;
+                if (edge === 'right') return point.x <= clip.x2;
+                if (edge === 'bottom') return point.y >= clip.y1;
+                if (edge === 'top') return point.y <= clip.y2;
+                return false;
+            }
+            
+            function computeIntersection(p1, p2, edge) {
+                if (edge === 'left') {
+                    let x = clip.x1;
+                    let y = p1.y + (clip.x1 - p1.x) * (p2.y - p1.y) / (p2.x - p1.x);
+                    return { x, y };
+                } else if (edge === 'right') {
+                    let x = clip.x2;
+                    let y = p1.y + (clip.x2 - p1.x) * (p2.y - p1.y) / (p2.x - p1.x);
+                    return { x, y };
+                } else if (edge === 'bottom') {
+                    let y = clip.y1;
+                    let x = p1.x + (clip.y1 - p1.y) * (p2.x - p1.x) / (p2.y - p1.y);
+                    return { x, y };
+                } else if (edge === 'top') {
+                    let y = clip.y2;
+                    let x = p1.x + (clip.y2 - p1.y) * (p2.x - p1.x) / (p2.y - p1.y);
+                    return { x, y };
+                }
+                return null;
+            }
+            
+            let result = polygon;
+            result = clipAgainstEdge(result, 'left');
+            result = clipAgainstEdge(result, 'right');
+            result = clipAgainstEdge(result, 'bottom');
+            result = clipAgainstEdge(result, 'top');
+            
+            return result;
+        }
+        
+        function performClipping() {
+            if (!state.clipWindow) {
+                updateStatus('Сначала создайте отсекающее окно', 'error');
+                return;
+            }
+            
+            if (state.lines.length === 0 && !state.polygonComplete) {
+                updateStatus('Нет отрезков или многоугольника для отсечения', 'error');
+                return;
+            }
+            
+            state.clippedLines = [];
+            state.intersectionPoints = [];
+            
+            if (state.lines.length > 0) {
+                for (let line of state.lines) {
+                    let clippedLine = midpointClip(line, state.clipWindow);
+                    if (clippedLine) {
+                        state.clippedLines.push(clippedLine);
+                        
+                        if (clippedLine.x1 !== line.x1 || clippedLine.y1 !== line.y1) {
+                            state.intersectionPoints.push({x: clippedLine.x1, y: clippedLine.y1});
+                        }
+                        if (clippedLine.x2 !== line.x2 || clippedLine.y2 !== line.y2) {
+                            state.intersectionPoints.push({x: clippedLine.x2, y: clippedLine.y2});
+                        }
+                    }
+                }
+            }
+            
+            if (state.polygonComplete && state.convexPolygon.length >= 3) {
+                let clippedPolygon = sutherlandHodgmanClip(state.convexPolygon, state.clipWindow);
+                if (clippedPolygon.length >= 3) {
+                    for (let i = 0; i < clippedPolygon.length; i++) {
+                        let p1 = clippedPolygon[i];
+                        let p2 = clippedPolygon[(i + 1) % clippedPolygon.length];
+                        state.clippedLines.push({ x1: p1.x, y1: p1.y, x2: p2.x, y2: p2.y });
+                        
+                        state.intersectionPoints.push({x: p1.x, y: p1.y});
+                        state.intersectionPoints.push({x: p2.x, y: p2.y});
+                    }
+                }
+            }
+            
+            const totalParts = state.clippedLines.length;
+            updateStatus(`Отсечение выполнено. Видимых частей: ${totalParts}`, 'success');
+            redrawAll();
+        }
+        
+        window.addEventListener('DOMContentLoaded', init);
+    </script>
+</body>
+</html>
