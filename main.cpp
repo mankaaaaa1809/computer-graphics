@@ -1,261 +1,261 @@
-// main.cpp
-#include <QApplication>
-#include <QMainWindow>
-#include <QVBoxLayout>
-#include <QHBoxLayout>
-#include <QPushButton>
-#include <QLineEdit>
-#include <QLabel>
-#include <QOpenGLWidget>
-#include <QOpenGLFunctions>
-#include <QOpenGLBuffer>
-#include <QOpenGLVertexArrayObject>
+#include <windows.h>
+#include <GL/glut.h>
+#include <GL/glu.h>
 #include <vector>
-#include <cmath>
+#include <iostream>
+#include <iomanip>
+#include <sstream>
 
 using namespace std;
 
-// Вершины буквы "М"
-vector<vector<float>> vertices = {
-    {2, 2, 2}, {4, 2, 2}, {8, 2, 2}, {10, 2, 2}, {5, 5, 2}, {7, 5, 2},
-    {4, 7, 2}, {6, 7, 2}, {8, 7, 2}, {2, 10, 2}, {5, 10, 2}, {7, 10, 2}, {10, 10, 2},
-    {2, 2, 4}, {4, 2, 4}, {8, 2, 4}, {10, 2, 4}, {5, 5, 4}, {7, 5, 4},
-    {4, 7, 4}, {6, 7, 4}, {8, 7, 4}, {2, 10, 4}, {5, 10, 4}, {7, 10, 4}, {10, 10, 4}
+vector<vector<GLfloat>> vertices = {
+    {2,2,2},{4,2,2},{8,2,2},{10,2,2},{5,5,2},{7,5,2},
+    {4,7,2},{6,7,2},{8,7,2},{2,10,2},{5,10,2},{7,10,2},{10,10,2},
+    {2,2,4},{4,2,4},{8,2,4},{10,2,4},{5,5,4},{7,5,4},
+    {4,7,4},{6,7,4},{8,7,4},{2,10,4},{5,10,4},{7,10,4},{10,10,4}
 };
 
-// Рёбра
 vector<pair<int, int>> edges = {
-    {0, 1}, {1, 4}, {4, 6}, {6, 9}, {9, 10}, {10, 11}, {11, 12}, {12, 3}, {3, 2}, {2, 5},
-    {5, 7}, {7, 8}, {8, 11}, {1, 13}, {13, 14}, {14, 17}, {17, 19}, {19, 21}, {21, 22},
-    {22, 23}, {23, 24}, {24, 15}, {15, 16}, {16, 18}, {18, 20}, {20, 23}, {0, 13}, {9, 21},
-    {12, 24}, {3, 15}, {2, 16}, {5, 18}, {7, 20}, {8, 20}, {6, 19}, {4, 17}, {10, 22}, {11, 23}
+    {0,1},{1,6},{4,6},{4,5},{5,8},{8,2},{2,3},{3,12},{12,11},{11,7},
+    {7,10},{10,9},{9,0},
+    {0,13},{1,14},{2,15},{3,16},{4,17},{5,18},{6,19},{7,20},{8,21},
+    {9,22},{10,23},{11,24},{12,25},
+    {13,14},{14,19},{17,19},{17,18},{18,21},{21,15},{15,16},
+    {16,25},{25,24},{24,20},{20,23},{23,22},{22,13}
 };
 
-class GLWidget : public QOpenGLWidget, protected QOpenGLFunctions {
-    Q_OBJECT
-private:
-    float scaleFactor = 1.0f;
-    float rotateX = 30.0f;
-    float rotateY = -45.0f;
-    QPoint lastMousePos;
+GLfloat scaleObj = 1.5f;
+GLfloat tx = 0, ty = 0, tz = 0;
+GLfloat ax = 0, ay = 0, az = 0;
+GLfloat angleAxis = 0, axisX = 1, axisY = 1, axisZ = 1;
 
-public:
-    GLWidget(QWidget* parent = nullptr) : QOpenGLWidget(parent) {
-        setFocusPolicy(Qt::StrongFocus);
-    }
+GLfloat modelMatrix[16];
 
-    void setScale(float scale) {
-        scaleFactor = scale;
-        update();
-    }
+float pan2D[4][2] = {};
+float pan3D[3] = { 15,15,15 };
 
-protected:
-    void initializeGL() override {
-        initializeOpenGLFunctions();
-        glClearColor(0.95f, 0.95f, 0.98f, 1.0f);
-        glEnable(GL_DEPTH_TEST);
-        glEnable(GL_LINE_SMOOTH);
-        glEnable(GL_POINT_SMOOTH);
-        glHint(GL_LINE_SMOOTH_HINT, GL_NICEST);
-        glHint(GL_POINT_SMOOTH_HINT, GL_NICEST);
-    }
+bool mouseDown = false;
+int lastX = 0, lastY = 0;
 
-    void resizeGL(int w, int h) override {
-        glViewport(0, 0, w, h);
-    }
+int w = 1700, h = 1100;
 
-    void paintGL() override {
-        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+enum Mode { MODE_3D, MODE_OXY, MODE_OXZ, MODE_OYZ, MODE_ALL };
+Mode mode = MODE_3D;
 
-        glMatrixMode(GL_PROJECTION);
-        glLoadIdentity();
-        gluPerspective(45.0, (double)width()/height(), 0.1, 100.0);
-
-        glMatrixMode(GL_MODELVIEW);
-        glLoadIdentity();
-
-        gluLookAt(15, 15, 15, 0, 0, 0, 0, 1, 0);
-        glRotatef(rotateX, 1, 0, 0);
-        glRotatef(rotateY, 0, 1, 0);
-
-        drawAxes();
-        drawLetter();
-    }
-
-    void drawAxes() {
-        glLineWidth(2.0);
-
-        glBegin(GL_LINES);
-        glColor3f(1.0, 0.0, 0.0);
-        glVertex3f(0, 0, 0);
-        glVertex3f(10, 0, 0);
-
-        glColor3f(0.0, 1.0, 0.0);
-        glVertex3f(0, 0, 0);
-        glVertex3f(0, 10, 0);
-
-        glColor3f(0.0, 0.0, 1.0);
-        glVertex3f(0, 0, 0);
-        glVertex3f(0, 0, 10);
-        glEnd();
-
-        glLineWidth(1.0);
-    }
-
-    void drawLetter() {
-        glLineWidth(2.0);
-        glBegin(GL_LINES);
-        glColor3f(0.2, 0.2, 0.8);
-
-        for (const auto& edge : edges) {
-            int v1 = edge.first;
-            int v2 = edge.second;
-            glVertex3f(vertices[v1][0] * scaleFactor, vertices[v1][1] * scaleFactor, vertices[v1][2] * scaleFactor);
-            glVertex3f(vertices[v2][0] * scaleFactor, vertices[v2][1] * scaleFactor, vertices[v2][2] * scaleFactor);
-        }
-        glEnd();
-
-        glPointSize(6.0);
-        glBegin(GL_POINTS);
-        glColor3f(1.0, 0.0, 0.0);
-
-        for (const auto& vertex : vertices) {
-            glVertex3f(vertex[0] * scaleFactor, vertex[1] * scaleFactor, vertex[2] * scaleFactor);
-        }
-        glEnd();
-
-        glLineWidth(1.0);
-    }
-
-    void mousePressEvent(QMouseEvent* event) override {
-        if (event->button() == Qt::LeftButton) {
-            lastMousePos = event->pos();
-        }
-    }
-
-    void mouseMoveEvent(QMouseEvent* event) override {
-        if (event->buttons() & Qt::LeftButton) {
-            float dx = event->x() - lastMousePos.x();
-            float dy = event->y() - lastMousePos.y();
-
-            rotateY += dx * 0.5f;
-            rotateX += dy * 0.5f;
-
-            lastMousePos = event->pos();
-            update();
-        }
-    }
-
-    void wheelEvent(QWheelEvent* event) override {
-        float delta = event->angleDelta().y() > 0 ? 1.1f : 0.9f;
-        scaleFactor *= delta;
-        emit scaleChanged(scaleFactor);
-        update();
-    }
-
-signals:
-    void scaleChanged(float scale);
-};
-
-class MainWindow : public QMainWindow {
-    Q_OBJECT
-private:
-    GLWidget* glWidget;
-    QLineEdit* scaleInput;
-    QLabel* currentScaleLabel;
-
-public:
-    MainWindow() {
-        setWindowTitle("Лабораторная работа 6 - 3D Буква М (Qt + OpenGL)");
-        resize(1200, 700);
-
-        QWidget* centralWidget = new QWidget(this);
-        setCentralWidget(centralWidget);
-
-        QHBoxLayout* mainLayout = new QHBoxLayout(centralWidget);
-
-        glWidget = new GLWidget(this);
-        mainLayout->addWidget(glWidget, 3);
-
-        QWidget* controlPanel = new QWidget(this);
-        controlPanel->setStyleSheet("background-color: #d8d8e0;");
-        controlPanel->setFixedWidth(400);
-
-        QVBoxLayout* panelLayout = new QVBoxLayout(controlPanel);
-
-        QLabel* titleLabel = new QLabel("Масштабирование");
-        titleLabel->setStyleSheet("font-size: 18px; font-weight: bold; margin: 10px;");
-        panelLayout->addWidget(titleLabel);
-
-        QLabel* inputLabel = new QLabel("Коэффициент масштабирования:");
-        inputLabel->setStyleSheet("margin: 10px;");
-        panelLayout->addWidget(inputLabel);
-
-        scaleInput = new QLineEdit("1.0");
-        scaleInput->setStyleSheet("padding: 5px; margin: 10px;");
-        scaleInput->setValidator(new QDoubleValidator(0.01, 100.0, 2, this));
-        panelLayout->addWidget(scaleInput);
-
-        QPushButton* applyButton = new QPushButton("Применить");
-        applyButton->setStyleSheet("padding: 10px; margin: 10px; background-color: #7a7a8c; color: white;");
-        panelLayout->addWidget(applyButton);
-
-        currentScaleLabel = new QLabel("Текущий масштаб: 1.00");
-        currentScaleLabel->setStyleSheet("margin: 10px; font-weight: bold;");
-        panelLayout->addWidget(currentScaleLabel);
-
-        QLabel* infoLabel = new QLabel("Информация:");
-        infoLabel->setStyleSheet("margin: 10px; font-size: 14px;");
-        panelLayout->addWidget(infoLabel);
-
-        QLabel* verticesLabel = new QLabel("Вершин: 25");
-        verticesLabel->setStyleSheet("margin: 5px 10px;");
-        panelLayout->addWidget(verticesLabel);
-
-        QLabel* edgesLabel = new QLabel("Рёбер: 38");
-        edgesLabel->setStyleSheet("margin: 5px 10px;");
-        panelLayout->addWidget(edgesLabel);
-
-        QLabel* instructionLabel = new QLabel("Используйте:\n• ЛКМ + движение - вращение\n• Колесо мыши - масштабирование");
-        instructionLabel->setStyleSheet("margin: 20px 10px; color: #8a2a2a;");
-        panelLayout->addWidget(instructionLabel);
-
-        panelLayout->addStretch();
-
-        mainLayout->addWidget(controlPanel, 1);
-
-        connect(applyButton, &QPushButton::clicked, this, &MainWindow::applyScale);
-        connect(glWidget, &GLWidget::scaleChanged, this, &MainWindow::updateScaleDisplay);
-        connect(scaleInput, &QLineEdit::returnPressed, this, &MainWindow::applyScale);
-    }
-
-private slots:
-    void applyScale() {
-        bool ok;
-        float scale = scaleInput->text().toFloat(&ok);
-        if (ok && scale > 0) {
-            glWidget->setScale(scale);
-            currentScaleLabel->setText(QString("Текущий масштаб: %1").arg(scale, 0, 'f', 2));
-        } else {
-            scaleInput->setText("1.0");
-            glWidget->setScale(1.0);
-            currentScaleLabel->setText("Текущий масштаб: 1.00");
-        }
-    }
-
-    void updateScaleDisplay(float scale) {
-        scaleInput->setText(QString::number(scale, 'f', 2));
-        currentScaleLabel->setText(QString("Текущий масштаб: %1").arg(scale, 0, 'f', 2));
-    }
-};
-
-int main(int argc, char* argv[]) {
-    QApplication app(argc, argv);
-
-    MainWindow window;
-    window.show();
-
-    return app.exec();
+vector<float> center() {
+    float x = 0, y = 0, z = 0;
+    for (auto& v : vertices) { x += v[0]; y += v[1]; z += v[2]; }
+    return { x / vertices.size(),y / vertices.size(),z / vertices.size() };
 }
 
-#include "main.moc"
+void applyTransform() {
+    glTranslatef(tx, ty, tz);
+    if (angleAxis != 0) glRotatef(angleAxis, axisX, axisY, axisZ);
+    glRotatef(ax, 1, 0, 0);
+    glRotatef(ay, 0, 1, 0);
+    glRotatef(az, 0, 0, 1);
+    glScalef(scaleObj, scaleObj, scaleObj);
+}
+
+void updateModelMatrix() {
+    glPushMatrix();
+    glLoadIdentity();
+    applyTransform();
+    glGetFloatv(GL_MODELVIEW_MATRIX, modelMatrix);
+    glPopMatrix();
+}
+
+void drawAxes(float L = 10) {
+    glBegin(GL_LINES);
+    glColor3f(1, 0, 0); glVertex3f(0, 0, 0); glVertex3f(L, 0, 0);
+    glColor3f(0, 1, 0); glVertex3f(0, 0, 0); glVertex3f(0, L, 0);
+    glColor3f(0, 0, 1); glVertex3f(0, 0, 0); glVertex3f(0, 0, L);
+    glEnd();
+}
+
+void drawLetter() {
+    glColor3f(0, 1, 1);
+    glBegin(GL_LINES);
+    for (auto& e : edges) {
+        auto& a = vertices[e.first];
+        auto& b = vertices[e.second];
+        glVertex3f(a[0], a[1], a[2]);
+        glVertex3f(b[0], b[1], b[2]);
+    }
+    glEnd();
+}
+
+void drawMatrixOverlay() {
+    if (mode == MODE_ALL) return;
+
+    glMatrixMode(GL_PROJECTION);
+    glPushMatrix();
+    glLoadIdentity();
+    gluOrtho2D(0, w, 0, h);
+    glMatrixMode(GL_MODELVIEW);
+    glPushMatrix();
+    glLoadIdentity();
+
+    glColor3f(0, 0, 0);
+    int y = h - 20;
+    for (int i = 0; i < 4; i++) {
+        stringstream ss;
+        for (int j = 0; j < 4; j++)
+            ss << setw(7) << fixed << setprecision(2) << modelMatrix[i * 4 + j] << " ";
+        glRasterPos2i(10, y);
+        for (char c : ss.str()) glutBitmapCharacter(GLUT_BITMAP_8_BY_13, c);
+        y -= 15;
+    }
+
+    glPopMatrix();
+    glMatrixMode(GL_PROJECTION);
+    glPopMatrix();
+    glMatrixMode(GL_MODELVIEW);
+}
+
+void setup3D() {
+    auto c = center();
+    glMatrixMode(GL_PROJECTION);
+    glLoadIdentity();
+    gluPerspective(70, (float)w / h, 0.1, 500);
+
+    glMatrixMode(GL_MODELVIEW);
+    glLoadIdentity();
+    gluLookAt(
+        c[0] + pan3D[0], c[1] + pan3D[1], c[2] + pan3D[2],
+        c[0], c[1], c[2],
+        0, 1, 0
+    );
+}
+
+void setupOrtho(int idx) {
+    auto c = center();
+    glMatrixMode(GL_PROJECTION);
+    glLoadIdentity();
+    glOrtho(-12 + pan2D[idx][0], 12 + pan2D[idx][0],
+        -12 + pan2D[idx][1], 12 + pan2D[idx][1],
+        -100, 100);
+
+    glMatrixMode(GL_MODELVIEW);
+    glLoadIdentity();
+
+    if (idx == 1)
+        gluLookAt(c[0], c[1], c[2] + 30, c[0], c[1], c[2], 0, 1, 0);
+    if (idx == 2)
+        gluLookAt(c[0], c[1] + 30, c[2], c[0], c[1], c[2], 0, 0, -1);
+    if (idx == 3)
+        gluLookAt(c[0] + 30, c[1], c[2], c[0], c[1], c[2], 0, 1, 0);
+}
+
+void drawScene(int idx) {
+    if (idx == 0) setup3D();
+    else setupOrtho(idx);
+
+    drawAxes();
+    glPushMatrix();
+    applyTransform();
+    drawLetter();
+    glPopMatrix();
+}
+
+int viewportIndex(int x, int y) {
+    if (mode != MODE_ALL) return mode == MODE_3D ? 0 : mode;
+    if (x<w / 2 && y>h / 2) return 0;
+    if (x >= w / 2 && y > h / 2) return 1;
+    if (x < w / 2 && y <= h / 2) return 2;
+    return 3;
+}
+
+void display() {
+    updateModelMatrix();
+    glClearColor(0.95, 0.95, 0.98, 1);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    glEnable(GL_DEPTH_TEST);
+
+    if (mode == MODE_ALL) {
+        glViewport(0, h / 2, w / 2, h / 2); drawScene(0);
+        glViewport(w / 2, h / 2, w / 2, h / 2); drawScene(1);
+        glViewport(0, 0, w / 2, h / 2); drawScene(2);
+        glViewport(w / 2, 0, w / 2, h / 2); drawScene(3);
+    }
+    else {
+        glViewport(0, 0, w, h);
+        drawScene(mode == MODE_3D ? 0 : mode);
+    }
+
+    glDisable(GL_DEPTH_TEST);
+    drawMatrixOverlay();
+    glutSwapBuffers();
+}
+
+void mouse(int b, int s, int x, int y) {
+    if (b == GLUT_LEFT_BUTTON) {
+        mouseDown = (s == GLUT_DOWN);
+        lastX = x; lastY = y;
+    }
+}
+
+void motion(int x, int y) {
+    if (!mouseDown) return;
+    int dx = x - lastX, dy = y - lastY;
+    int idx = viewportIndex(x, h - y);
+
+    if (idx == 0) {
+        pan3D[0] -= dx * 0.05f;
+        pan3D[1] += dy * 0.05f;
+    }
+    else {
+        pan2D[idx][0] -= dx * 0.05f;
+        pan2D[idx][1] += dy * 0.05f;
+    }
+
+    lastX = x; lastY = y;
+    glutPostRedisplay();
+}
+
+void keyboard(unsigned char k, int, int) {
+    if (k == '1')mode = MODE_3D;
+    if (k == '2')mode = MODE_OXY;
+    if (k == '3')mode = MODE_OXZ;
+    if (k == '4')mode = MODE_OYZ;
+    if (k == '5')mode = MODE_ALL;
+
+    if (k == '+')scaleObj *= 1.1;
+    if (k == '-')scaleObj /= 1.1;
+    if (k == 'w')ty += 0.5;
+    if (k == 's')ty -= 0.5;
+    if (k == 'a')tx -= 0.5;
+    if (k == 'd')tx += 0.5;
+    if (k == 'q')tz += 0.5;
+    if (k == 'e')tz -= 0.5;
+    if (k == 'x')ax += 5;
+    if (k == 'X')ax -= 5;
+    if (k == 'y')ay += 5;
+    if (k == 'Y')ay -= 5;
+    if (k == 'z')az += 5;
+    if (k == 'Z')az -= 5;
+    if (k == 'r')angleAxis += 10;
+    if (k == 't')angleAxis -= 10;
+    if (k == 27)exit(0);
+
+    glutPostRedisplay();
+}
+
+void reshape(int W, int H) { w = W; h = H; }
+
+int main(int argc, char** argv) {
+    glutInit(&argc, argv);
+    glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGB | GLUT_DEPTH);
+    glutInitWindowSize(w, h);
+    glutCreateWindow("������������ ������ 6");
+
+    glutDisplayFunc(display);
+    glutReshapeFunc(reshape);
+    glutKeyboardFunc(keyboard);
+    glutMouseFunc(mouse);
+    glutMotionFunc(motion);
+
+    glEnable(GL_DEPTH_TEST);
+    glutMainLoop();
+    return 0;
+}
